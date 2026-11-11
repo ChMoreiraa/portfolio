@@ -4,9 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Carlos Henrique Moreira · Engenheiro de IA</title>
-  <meta name="description" content="Carlos Henrique Moreira, engenheiro de IA. Agentes, back-end e automação para produção, com regra, custo medido e revisão humana." />
+  <meta name="description" content="Carlos Henrique Moreira, engenheiro de IA e de software. Crio software com IA, automações e back-ends prontos para produção, com regra clara e custo sob controle." />
   <meta property="og:title" content="Carlos Henrique Moreira · Engenheiro de IA" />
-  <meta property="og:description" content="Construo sistemas de IA que funcionam fora da demo." />
+  <meta property="og:description" content="Crio software com IA e automações feitos para durar e trabalhar por você." />
   <meta property="og:type" content="website" />
   <meta name="theme-color" content="#0E0D13" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -19,10 +19,77 @@
       try { tema = localStorage.getItem('tema'); } catch (e) {}
       if (tema !== 'light' && tema !== 'dark') tema = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
       document.documentElement.dataset.theme = tema;
+      var visto;
+      try { visto = sessionStorage.getItem('carga-vista'); } catch (e) {}
+      if (visto || matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('sem-carga');
+      else document.documentElement.classList.add('carregando');
     })();
   </script>
+  <!-- Abertura "robô acordando": CSS aqui para aparecer antes de qualquer arquivo carregar -->
+  <style>
+    .carga {
+      --c-bg: #0E0D13; --c-txt: #ECEAF2; --c-fraco: #5E5A6B; --c-olho: #C4B5FD; --c-brilho: #A78BFA;
+      position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; background: var(--c-bg); color: var(--c-txt);
+      font-family: 'Geist Mono', ui-monospace, Consolas, monospace; cursor: pointer; overflow: hidden;
+    }
+    :root[data-theme='light'] .carga { --c-bg: #F4F2ED; --c-txt: #17151D; --c-fraco: #9893A3; --c-olho: #8B6CFF; --c-brilho: #6D4AFF; }
+    .sem-carga .carga { display: none; }
+    .carregando, .carregando body { overflow: hidden; }
+    .carga::before {
+      content: ''; position: absolute; left: 50%; top: 46%; width: 70vmin; height: 70vmin; translate: -50% -50%; border-radius: 50%;
+      background: radial-gradient(closest-side, color-mix(in oklab, var(--c-brilho) 30%, transparent), transparent); filter: blur(30px);
+      animation: cargaAura 3.2s ease-in-out infinite;
+    }
+    @keyframes cargaAura { 50% { opacity: 0.6; scale: 0.9; } }
+    .carga__palco { position: relative; display: grid; justify-items: center; gap: 46px; }
+    .carga__antena { position: absolute; left: 50%; top: -44px; width: 3px; height: 30px; translate: -50% 0; border-radius: 3px; background: linear-gradient(#3a3846, #1c1b22); }
+    .carga__antena::before {
+      content: ''; position: absolute; left: 50%; top: -14px; width: 16px; height: 16px; translate: -50% 0; border-radius: 50%;
+      background: var(--c-olho); box-shadow: 0 0 18px 4px var(--c-brilho), 0 0 50px 10px color-mix(in oklab, var(--c-brilho) 45%, transparent);
+      animation: cargaPulso 1.6s ease-in-out infinite;
+    }
+    @keyframes cargaPulso { 50% { opacity: 0.45; box-shadow: 0 0 8px 2px var(--c-brilho); } }
+    .carga__visor {
+      position: relative; width: 230px; height: 140px; border-radius: 44px; display: flex; align-items: center; justify-content: center; gap: 46px;
+      background: linear-gradient(160deg, #26252d, #08080b 55%); border: 5px solid #e9e8ef;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), inset 0 10px 30px rgba(0, 0, 0, 0.8), 0 30px 70px -20px rgba(0, 0, 0, 0.8);
+    }
+    .carga__visor::after {
+      content: ''; position: absolute; left: 18px; right: 18px; top: 10px; height: 34%; border-radius: 30px 30px 60% 60%;
+      background: linear-gradient(rgba(255, 255, 255, 0.12), transparent); pointer-events: none;
+    }
+    .carga__olhos { display: flex; gap: 46px; will-change: translate; animation: cargaOlha 4.8s ease-in-out 1.2s infinite; }
+    .carga__olho {
+      width: 30px; height: 58px; border-radius: 16px; background: var(--c-olho); will-change: transform;
+      box-shadow: 0 0 16px var(--c-brilho), 0 0 40px color-mix(in oklab, var(--c-brilho) 55%, transparent);
+      transform: scaleY(0.08); animation: cargaAbre 0.9s cubic-bezier(.2, .8, .2, 1) 0.4s forwards, cargaPisca 3.4s ease-in-out 1.6s infinite;
+    }
+    @keyframes cargaAbre { to { transform: scaleY(1); } }
+    @keyframes cargaPisca { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.08); } }
+    @keyframes cargaOlha { 0%, 100% { translate: 0 0; } 25% { translate: -14px 0; } 55% { translate: 12px -2px; } 75% { translate: 0 0; } }
+    .carga__info { display: grid; justify-items: center; gap: 12px; font-size: 12px; letter-spacing: 0.08em; }
+    .carga__texto { color: var(--c-fraco); text-transform: lowercase; }
+    .carga__texto b { color: var(--c-txt); font-weight: 500; font-variant-numeric: tabular-nums; margin-left: 6px; }
+    .carga__barra { width: 180px; height: 2px; border-radius: 2px; background: color-mix(in oklab, var(--c-txt) 12%, transparent); overflow: hidden; }
+    .carga__barra i { display: block; height: 100%; width: 100%; transform-origin: left; transform: scaleX(0); background: linear-gradient(90deg, var(--c-brilho), var(--c-olho)); }
+    .carga__pular { position: absolute; bottom: 28px; left: 50%; translate: -50% 0; font-size: 10.5px; color: var(--c-fraco); letter-spacing: 0.06em; opacity: 0; animation: cargaSurge 0.6s 1.4s forwards; }
+    @keyframes cargaSurge { to { opacity: 1; } }
+  </style>
 </head>
 <body>
+  <div class="carga" id="carga" role="status" aria-live="polite" aria-label="Carregando">
+    <div class="carga__palco">
+      <div class="carga__visor" aria-hidden="true">
+        <span class="carga__antena"></span>
+        <div class="carga__olhos"><i class="carga__olho"></i><i class="carga__olho"></i></div>
+      </div>
+      <div class="carga__info">
+        <p class="carga__texto"><span id="carga-frase">acordando…</span><b id="carga-num">000%</b></p>
+        <div class="carga__barra"><i id="carga-barra"></i></div>
+      </div>
+    </div>
+    <p class="carga__pular" id="carga-pular">toque para pular</p>
+  </div>
   <a class="pular" href="#conteudo" data-i18n="ui.pular">Pular para o conteúdo</a>
 
   <div class="cursor" aria-hidden="true"><span class="cursor__ponto"></span><span class="cursor__rotulo"></span></div>

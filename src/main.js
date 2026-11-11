@@ -6,6 +6,7 @@ import './estilo-fluxo.css';
 import './estilo-demos.css';
 import './estilo-catalogo.css';
 import { montarFluxo } from './fluxo.js';
+import { criarCarga } from './carga.js';
 import { renderTime, ligarTime } from './demos.js';
 import { renderBarbu, ligarBarbu, vitrineBarbu, ajustarVitrine } from './barbu.js';
 import './estilo-barbu.css';
@@ -34,6 +35,12 @@ const EASE = 'expo.inOut';
 
 let lenis = null;
 let robo = null;
+let carga = { pronto() {}, fim: Promise.resolve(), aberta: Promise.resolve() };
+// Espera um momento ocioso do navegador (com teto) para criar o que é pesado e fica longe do topo
+const ocioso = () => new Promise((ok) => ('requestIdleCallback' in window ? requestIdleCallback(() => ok(), { timeout: 1500 }) : setTimeout(ok, 200)));
+// Teclado 3D, aurora e planeta só nascem depois da abertura (compilar tudo junto travava os olhos)
+const depoisDaAbertura = () => carga.fim.then(ocioso);
+let secaoAtual = 'inicio';
 let globo = null;
 let fundo = null;
 let caseCtx = null;
@@ -218,6 +225,7 @@ async function renderStack() {
     ligarTeclado();
     return;
   }
+  await depoisDaAbertura();
   const { criarTeclado3d } = await import('./teclado3d.js');
   let ultimo = null;
   kb3d = criarTeclado3d({
@@ -1175,11 +1183,14 @@ function ligarDominio() {
 function iniciarHome() {
   estado.homeIniciada = true;
   animarHome();
-  ligarRobo().then(entradaHero);
-  ligarGlobo();
+  // Com o robô pronto, a abertura pode terminar; a entrada do topo começa quando os olhos revelam o site
+  // O robô nasce com os olhos já abertos; o planeta, depois que o site aparece
+  carga.aberta.then(ligarRobo).then(() => { carga.pronto(); return carga.fim; }).then(entradaHero);
+  depoisDaAbertura().then(ligarGlobo);
 }
 
 function iniciar() {
+  carga = criarCarga();
   if (!reduzido) {
     lenis = new Lenis({ duration: 1.1, easing: (x) => Math.min(1, 1.001 - Math.pow(2, -10 * x)) });
     lenis.on('scroll', ScrollTrigger.update);
@@ -1203,12 +1214,15 @@ function iniciar() {
   ligarDominio();
 
   // Fundo em aurora: some no Home e no Stacks, muda de cor nas outras seções
-  fundo = criarFundo({ reduzido });
+  depoisDaAbertura().then(() => {
+    fundo = criarFundo({ reduzido });
+    if (estado.vista === 'home') fundo?.setSecao(secaoAtual);
+  });
   ["inicio", "sobre", "stacks", "trabalhos", "processo", "carreira", "contato"].forEach((id) => {
     const el = id === "inicio" ? $(".hero") : $("#" + id);
     ScrollTrigger.create({
       trigger: el, start: "top 55%", end: "bottom 55%",
-      onToggle: (s) => { if (s.isActive && estado.vista === "home") fundo?.setSecao(id); },
+      onToggle: (s) => { if (s.isActive) secaoAtual = id; if (s.isActive && estado.vista === "home") fundo?.setSecao(id); },
     });
   });
 
@@ -1217,7 +1231,7 @@ function iniciar() {
 
   document.fonts.ready.then(() => {
     const id = idDaRota();
-    if (id) mostrarCase(id);
+    if (id) { mostrarCase(id); carga.pronto(); }
     else {
       $('#case').hidden = true;
       iniciarHome();
