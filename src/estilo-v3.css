@@ -1,0 +1,172 @@
+/* Estilos das seções da v3: botão do card, teclado, carreira, formulário e embed. */
+
+/* Botão do card */
+.card__acoes { display: flex; align-items: center; gap: 14px; margin-top: 12px; }
+.card__btn {
+  display: inline-flex; align-items: center; gap: 10px; height: 40px; padding: 0 18px; border-radius: 999px;
+  border: 1px solid var(--linha-2); font-size: 13.5px; font-weight: 500; position: relative; overflow: hidden; isolation: isolate;
+  transition: color 0.5s var(--ease), border-color 0.5s var(--ease);
+}
+.card__btn::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--acento); transform: translateX(-101%); transition: transform 0.6s var(--ease); }
+.card__btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.6; transition: transform 0.6s var(--ease-out); }
+.card:hover .card__btn { color: var(--tinta); border-color: var(--acento); }
+.card:hover .card__btn::before { transform: translateX(0); }
+.card:hover .card__btn svg { transform: translateX(4px); }
+.card__vivo { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; color: #5EE0A8; }
+.card__vivo b { width: 7px; height: 7px; border-radius: 50%; background: #5EE0A8; animation: vivo 1.8s infinite; }
+@keyframes vivo { 0% { box-shadow: 0 0 0 0 rgba(94, 224, 168, 0.6); } 70%, 100% { box-shadow: 0 0 0 8px rgba(94, 224, 168, 0); } }
+.card__nome::after { display: none; }
+
+/* Teclado mecânico */
+.teclado {
+  --caixa-a: #23202d; --caixa-b: #141219; --placa: #0c0b10;
+  --tampa-a: #2c2938; --tampa-b: #201d29; --lado: #121018; --legenda: #cfc9de;
+  position: relative; max-width: 1080px; margin: 0 auto; padding: 18px 22px 26px; border-radius: 26px;
+  background: linear-gradient(180deg, var(--caixa-a), var(--caixa-b));
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.07) inset, 0 40px 80px -30px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+:root[data-theme='light'] .teclado {
+  --caixa-a: #dcd8cf; --caixa-b: #c9c4b9; --placa: #b9b3a7;
+  --tampa-a: #f7f4ee; --tampa-b: #ebe7df; --lado: #cfc9bd; --legenda: #3b3746;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 40px 70px -35px rgba(40, 30, 10, 0.45);
+}
+.teclado__topo { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 6px 16px; }
+.teclado__marca { font-size: 11px; letter-spacing: 0.2em; color: var(--suave); }
+.visor {
+  --luz: var(--acento);
+  flex: 1; max-width: 460px; height: 40px; border-radius: 8px; padding: 0 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: #07060a; border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.7);
+  font-size: 12px; overflow: hidden; white-space: nowrap;
+}
+.visor__nome { color: var(--luz); text-shadow: 0 0 10px color-mix(in oklab, var(--luz) 60%, transparent); font-weight: 500; transition: color 0.3s; }
+.visor__uso { color: #8d87a0; overflow: hidden; text-overflow: ellipsis; }
+.teclado__leds { display: flex; gap: 6px; }
+.teclado__leds i { width: 6px; height: 6px; border-radius: 50%; background: #5EE0A8; box-shadow: 0 0 8px #5EE0A8; }
+.teclado__leds i:nth-child(2) { background: var(--acento); box-shadow: 0 0 8px var(--acento); }
+.teclado__leds i:nth-child(3) { background: #3a3646; box-shadow: none; }
+.teclado__placa { display: grid; gap: 10px; padding: 14px; border-radius: 16px; background: var(--placa); box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.6); }
+.fileira { display: flex; gap: 10px; }
+.tecla {
+  --luz: var(--acento);
+  position: relative; isolation: isolate; flex: 1 1 0; min-width: 0; height: 96px; border-radius: 12px; padding: 0;
+  background: var(--lado); box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
+}
+.tecla::before {
+  content: ''; position: absolute; inset: -4px; border-radius: 16px; z-index: -1; opacity: 0;
+  background: radial-gradient(closest-side, var(--luz), transparent); filter: blur(10px); transition: opacity 0.25s;
+}
+.tecla__face {
+  position: absolute; inset: 3px 4px 10px; border-radius: 9px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  background: linear-gradient(180deg, var(--tampa-a), var(--tampa-b));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+  transition: transform 0.12s ease-out, box-shadow 0.2s;
+}
+.tecla__face img, .tecla__face svg { width: 34px; height: 34px; object-fit: contain; transition: transform 0.4s var(--ease-out); pointer-events: none; }
+:root[data-theme='dark'] .tecla__face img.inverte { filter: invert(1); }
+.tecla__nome { font-size: 10.5px; color: var(--legenda); letter-spacing: 0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 92%; }
+.tecla.apertada .tecla__face { transform: translateY(6px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 18px -4px var(--luz); }
+.tecla.apertada::before { opacity: 0.55; }
+.tecla.apertada .tecla__face img, .tecla.apertada .tecla__face svg { transform: scale(1.08); }
+.tecla:focus-visible { outline-offset: 2px; }
+.tecla--mod { flex: 0 0 150px; cursor: default; }
+.tecla--mod .tecla__face {
+  align-items: flex-start; justify-content: flex-end; padding: 0 14px 12px;
+  background: linear-gradient(180deg, color-mix(in oklab, var(--acento) 26%, var(--tampa-a)), color-mix(in oklab, var(--acento) 18%, var(--tampa-b)));
+}
+.tecla--mod .tecla__face span { font-size: 11px; color: var(--legenda); letter-spacing: 0.04em; }
+
+/* Carreira */
+.tempo { position: relative; max-width: 1040px; margin: 0 auto; }
+.tempo__trilho { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--linha-2); transform: translateX(-0.5px); }
+.tempo__prog { position: absolute; inset: 0; background: linear-gradient(180deg, var(--acento), var(--acento-2)); transform-origin: top; box-shadow: 0 0 12px var(--acento); }
+.tempo__lista { display: grid; gap: 56px; padding: 20px 0; }
+.tempo__item { position: relative; display: grid; grid-template-columns: 1fr 1fr; }
+.tempo__card { grid-column: 1; margin-right: 56px; padding: 26px 28px; border-radius: var(--raio); border: 1px solid var(--linha); background: var(--bg-2); transition: border-color 0.5s; }
+.tempo__item--dir .tempo__card { grid-column: 2; margin: 0 0 0 56px; }
+.tempo__ponto {
+  position: absolute; left: 50%; top: 30px; width: 15px; height: 15px; border-radius: 50%; transform: translateX(-50%);
+  background: var(--bg); border: 1.5px solid var(--linha-2); transition: background-color 0.5s, border-color 0.5s, box-shadow 0.5s;
+}
+.tempo__item.aceso .tempo__ponto { background: var(--acento); border-color: var(--acento); box-shadow: 0 0 0 6px color-mix(in oklab, var(--acento) 18%, transparent); }
+.tempo__item.aceso .tempo__card { border-color: color-mix(in oklab, var(--acento) 35%, var(--linha)); }
+.tempo__item--atual .tempo__ponto::after { content: ''; position: absolute; inset: -6px; border-radius: 50%; border: 1px solid var(--acento); animation: pingTempo 2s var(--ease-out) infinite; }
+@keyframes pingTempo { from { transform: scale(0.6); opacity: 1; } to { transform: scale(1.8); opacity: 0; } }
+.tempo__ano { display: flex; gap: 10px; align-items: center; font-size: 12px; color: var(--acento); min-height: 18px; }
+.tempo__ano b { font-weight: 500; padding: 2px 8px; border-radius: 999px; background: color-mix(in oklab, var(--acento) 16%, transparent); }
+.tempo__titulo { font-family: var(--serif); font-weight: 400; font-size: clamp(24px, 2.2vw, 32px); line-height: 1.12; margin-top: 8px; }
+.tempo__lugar { font-size: 12px; color: var(--suave); margin-top: 6px; }
+.tempo__desc { color: var(--suave); font-size: 15px; margin-top: 14px; }
+.tempo__tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+.tempo__tags li { font-size: 11px; color: var(--suave); padding: 4px 10px; border: 1px solid var(--linha); border-radius: 999px; }
+
+/* Contato com formulário */
+.contato__grade { align-items: start; }
+.contato__lado { display: flex; flex-direction: column; gap: 28px; }
+/* Largura explícita: sem ela o quadro "encolhe para caber" no canvas, o canvas cresce para caber no quadro
+   e o ResizeObserver do planeta entra em laço infinito (a página trava). */
+.contato__lado .contato__globo { align-self: center; width: 100%; max-width: 520px; }
+.contato__globo canvas { max-width: 100%; }
+.dados { padding: 24px; border-radius: var(--raio); border: 1px solid var(--linha); background: var(--bg-2); }
+.dados__rot { font-size: 11px; color: var(--fraco); }
+.dados .email { margin-top: 6px; max-width: none; }
+.dados .contato__links { margin-top: 20px; }
+.dados__local { font-size: 11.5px; color: var(--suave); margin-top: 18px; }
+.form { margin-top: 34px; display: grid; gap: 18px; position: relative; }
+.form__mel { position: absolute; left: -9999px; }
+.form__duo { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.campo { display: flex; flex-direction: column; gap: 8px; position: relative; border: 0; padding: 0; margin: 0; min-width: 0; }
+.campo > span, .campo legend { font-size: 11px; color: var(--fraco); padding: 0; }
+.campo input, .campo textarea {
+  width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--linha-2); background: var(--bg-2);
+  color: var(--texto); font: 400 15px var(--sans); outline: none; resize: vertical; transition: border-color 0.3s, box-shadow 0.3s;
+}
+.campo input:focus, .campo textarea:focus { border-color: var(--acento); box-shadow: 0 0 0 4px color-mix(in oklab, var(--acento) 15%, transparent); }
+.campo textarea::placeholder { color: var(--fraco); }
+.campo.invalido input, .campo.invalido textarea { border-color: #F87171; }
+.campo__erro { font-style: normal; font-size: 12px; color: #F87171; }
+.campo__erro:empty { display: none; }
+.campo--chips { flex-direction: row; flex-wrap: wrap; gap: 8px; }
+.campo--chips legend { width: 100%; margin-bottom: 8px; }
+.chip-op { position: relative; cursor: pointer; }
+.chip-op input { position: absolute; opacity: 0; pointer-events: none; }
+.chip-op span { display: inline-block; padding: 8px 16px; border-radius: 999px; border: 1px solid var(--linha-2); font-size: 13.5px; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
+.chip-op input:checked + span { background: var(--acento); color: var(--tinta); border-color: var(--acento); }
+.chip-op input:focus-visible + span { outline: 1.5px solid var(--acento); outline-offset: 3px; }
+.form__rodape { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.form.enviando .form__enviar { opacity: 0.6; pointer-events: none; }
+.form__status { font-size: 12px; color: var(--suave); max-width: 46ch; }
+.form__status.ok { color: #5EE0A8; }
+.form__status.erro { color: #F87171; }
+
+/* Case: "Testar agora" e embed */
+.case__resumo { display: flex; flex-direction: column; align-items: flex-start; gap: 20px; }
+.case__resumo p { max-width: 40ch; }
+.embed { border-radius: var(--raio); border: 1px solid var(--linha-2); overflow: hidden; background: var(--bg-2); }
+.embed__barra { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--linha); font-size: 12px; color: var(--suave); }
+.embed__barra i { width: 10px; height: 10px; border-radius: 50%; background: var(--linha-2); }
+.embed__barra span { margin-left: 8px; }
+.embed__barra a { margin-left: auto; color: var(--acento); }
+.embed__tela { position: relative; height: min(78vh, 720px); background: radial-gradient(80% 80% at 50% 30%, rgba(167, 139, 250, 0.16), transparent 70%), #0a0b0f; }
+.embed__tela iframe { width: 100%; height: 100%; border: 0; display: block; }
+.embed__capa { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 32px; text-align: center; color: #ECEAF2; }
+.embed__capa > p:first-child { font-family: var(--serif); font-size: clamp(22px, 2.2vw, 30px); line-height: 1.25; max-width: 30ch; }
+.embed__priv { font-size: 11.5px; color: #9792A6; }
+
+@media (max-width: 860px) {
+  .fileira { flex-wrap: wrap; }
+  .tecla { flex: 0 0 calc(25% - 7.5px); height: 78px; }
+  .tecla--mod { flex: 0 0 100%; height: 40px; }
+  .tecla--mod .tecla__face { justify-content: center; padding-bottom: 6px; }
+  .teclado { padding: 14px; }
+  .teclado__topo { flex-wrap: wrap; }
+  .visor { order: 3; max-width: none; flex-basis: 100%; }
+  .tempo__trilho { left: 7px; }
+  .tempo__item { grid-template-columns: 1fr; padding-left: 34px; }
+  .tempo__card, .tempo__item--dir .tempo__card { grid-column: 1; margin: 0; }
+  .tempo__ponto { left: 7px; }
+  .form__duo { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .tecla { flex-basis: calc(33.333% - 7px); }
+  .tecla__face img, .tecla__face svg { width: 28px; height: 28px; }
+}
