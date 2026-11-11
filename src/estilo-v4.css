@@ -1,0 +1,188 @@
+/* v4: fundo em aurora, foto flutuante, números, teclado 3D e cards de projeto. */
+
+/* Fundo em aurora (canvas fixo atrás de tudo; o Home e o Stacks o escondem) */
+.fundo {
+  position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: -2; pointer-events: none;
+  opacity: 0; transition: opacity 0.6s; filter: blur(30px) saturate(1.1); transform: scale(1.1);
+}
+#stacks { position: relative; isolation: isolate; }
+#stacks::before {
+  content: ''; position: absolute; inset: 0 calc(50% - 50vw); z-index: -1; background: var(--bg);
+}
+
+/* Sobre: texto + foto flutuante */
+.sobre__grade { grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); align-items: center; }
+/* O quadro tem a proporção da foto (941×1672): antes era 4:5 e a foto vazava 150 px para baixo, por cima do texto no celular */
+.flutua { position: relative; width: 100%; max-width: 330px; aspect-ratio: 941 / 1672; justify-self: center; margin: 0; }
+.flutua__aura {
+  position: absolute; inset: 12% 6% 18%; border-radius: 50%;
+  background: radial-gradient(circle at 50% 45%, color-mix(in oklab, var(--acento) 55%, transparent), transparent 68%);
+  filter: blur(40px); animation: aura 7s ease-in-out infinite;
+}
+@keyframes aura { 50% { transform: scale(1.08); opacity: 0.8; } }
+/* Ícones em volta da foto: cartões de vidro inclinados, cada um flutuando no seu ritmo.
+   O GSAP mexe em transform (paralaxe); a flutuação usa `translate` e o hover usa `scale`, sem conflito. */
+.flutua__icones { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.ficone { position: absolute; left: var(--x); top: var(--y); pointer-events: auto; }
+.ficone__in {
+  display: grid; place-items: center; width: 58px; height: 58px; border-radius: 17px; rotate: var(--r);
+  translate: -50% -50%; background: color-mix(in oklab, var(--bg-2) 72%, transparent); backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px); border: 1px solid color-mix(in oklab, var(--cor) 30%, var(--linha-2));
+  box-shadow: 0 16px 34px -14px rgba(0, 0, 0, 0.7), 0 0 26px -12px var(--cor);
+  animation: ficoneFlutua var(--d) ease-in-out var(--atraso) infinite; transition: scale 0.4s var(--ease-out), border-color 0.3s;
+}
+.ficone__in img, .ficone__in svg { width: 30px; height: 30px; object-fit: contain; }
+:root[data-theme='dark'] .ficone__in img.inverte { filter: invert(1); }
+@keyframes ficoneFlutua { 50% { translate: -50% calc(-50% - 12px); rotate: calc(var(--r) * -0.6); } }
+.ficone small {
+  position: absolute; left: 0; top: 40px; translate: -50% 0; padding: 4px 9px; border-radius: 999px; white-space: nowrap;
+  font: 500 10.5px var(--mono); color: var(--tinta); background: var(--cor); opacity: 0; scale: 0.9; transition: opacity 0.3s, scale 0.3s var(--ease-out);
+  pointer-events: none;
+}
+.ficone:hover .ficone__in { scale: 1.12; border-color: var(--cor); }
+.ficone:hover small { opacity: 1; scale: 1; }
+.flutua__corpo { position: absolute; inset: 0; display: grid; place-items: end center; animation: flutuar 6s ease-in-out infinite; transform-style: preserve-3d; }
+@keyframes flutuar { 0%, 100% { translate: 0 0; rotate: -1.2deg; } 50% { translate: 0 -18px; rotate: 1.2deg; } }
+.flutua__corpo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: bottom; filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.45)); }
+.flutua__mono {
+  display: none; align-self: center; width: 70%; aspect-ratio: 1; border-radius: 50%; place-items: center;
+  font-family: var(--serif); font-style: italic; font-size: clamp(80px, 9vw, 140px); color: var(--acento);
+  background: radial-gradient(circle at 35% 30%, color-mix(in oklab, var(--acento) 22%, var(--bg-2)), var(--bg-2) 70%);
+  border: 1px solid var(--linha-2); box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.6);
+}
+.flutua.sem-foto img { display: none; }
+.flutua.sem-foto .flutua__mono { display: grid; }
+.flutua__sombra {
+  position: absolute; left: 22%; right: 22%; bottom: -4%; height: 6%; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.45), transparent); animation: sombra 6s ease-in-out infinite;
+}
+@keyframes sombra { 50% { transform: scale(0.82); opacity: 0.6; } }
+
+.numeros { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 64px; }
+.numero {
+  position: relative; padding: 26px 28px; border-radius: var(--raio); border: 1px solid var(--linha);
+  background: color-mix(in oklab, var(--bg-2) 70%, transparent); backdrop-filter: blur(10px); overflow: hidden;
+}
+.numero::before {
+  content: ''; position: absolute; left: 0; top: 0; width: 100%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--acento), transparent); opacity: 0.6;
+}
+.numero b { display: block; font-family: var(--serif); font-weight: 400; font-size: clamp(48px, 5vw, 76px); line-height: 1; color: var(--texto); letter-spacing: -0.02em; }
+.numero span { display: block; margin-top: 10px; color: var(--suave); font-size: 14.5px; }
+
+/* Stacks: teclado 3D */
+.kb3d { --luz: var(--acento); position: relative; height: min(74vh, 680px); min-height: 500px; margin-top: -10px; }
+.kb3d::before {
+  content: ''; position: absolute; left: 50%; top: 55%; width: 70%; height: 70%; translate: -50% -50%; border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in oklab, var(--luz) 26%, transparent), transparent);
+  filter: blur(30px); transition: background 0.6s; pointer-events: none;
+}
+/* O quadro passa 90 px da seção para baixo (teclado3d.js compensa na câmera): o canto do teclado não corta */
+#kb3d-canvas { --folga: 90px; position: absolute; left: 0; top: 0; width: 100%; height: calc(100% + var(--folga)); display: block; cursor: grab; }
+#kb3d-canvas:active { cursor: grabbing; }
+.kb3d__info { position: absolute; left: 0; top: 8%; max-width: 320px; pointer-events: none; z-index: 2; }
+.kb3d__dica { font-size: 11.5px; color: var(--fraco); }
+.kb3d__cat { font-size: 11px; color: var(--luz); margin-top: 26px; min-height: 16px; letter-spacing: 0.06em; text-transform: uppercase; }
+.kb3d__nome { font-family: var(--serif); font-weight: 400; font-size: clamp(40px, 4.2vw, 68px); line-height: 1; margin-top: 6px; letter-spacing: -0.02em; }
+.kb3d__uso { color: var(--suave); margin-top: 14px; font-size: 15.5px; min-height: 48px; }
+
+/* Projetos: grade de 3 cards iguais */
+.grade { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
+.pcard {
+  --mx: 50%; --my: 0%;
+  position: relative; display: flex; flex-direction: column; border-radius: 22px; overflow: hidden; isolation: isolate;
+  background: color-mix(in oklab, var(--bg-2) 85%, transparent); border: 1px solid var(--linha);
+  transform-style: preserve-3d; transition: border-color 0.4s, box-shadow 0.5s;
+}
+.pcard::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none; z-index: 3;
+  background: radial-gradient(380px circle at var(--mx) var(--my), hsl(var(--h) 90% 70%), transparent 55%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude;
+  opacity: 0; transition: opacity 0.4s;
+}
+.pcard:hover { box-shadow: 0 40px 80px -40px hsl(var(--h) 80% 40% / 0.55); }
+.pcard:hover::after { opacity: 1; }
+
+.pcard__capa {
+  position: relative; aspect-ratio: 16 / 11; overflow: hidden;
+  background:
+    radial-gradient(70% 80% at 50% 45%, hsl(var(--h) 75% 55% / 0.55), transparent 70%),
+    linear-gradient(160deg, hsl(var(--h) 45% 16%), hsl(calc(var(--h) + 30) 40% 7%));
+}
+:root[data-theme='light'] .pcard__capa {
+  background:
+    radial-gradient(70% 80% at 50% 45%, hsl(var(--h) 85% 70% / 0.6), transparent 70%),
+    linear-gradient(160deg, hsl(var(--h) 60% 88%), hsl(calc(var(--h) + 30) 50% 80%));
+}
+.pcard__grade {
+  position: absolute; inset: 0; opacity: 0.4;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.35) 1px, transparent 1px); background-size: 18px 18px;
+  mask-image: radial-gradient(circle at 50% 50%, #000 20%, transparent 75%);
+  transition: transform 1.2s var(--ease-out);
+}
+.pcard:hover .pcard__grade { transform: scale(1.12); }
+.pcard__luz {
+  position: absolute; inset: 0; opacity: 0; transition: opacity 0.5s;
+  background: radial-gradient(260px circle at var(--mx) var(--my), rgba(255, 255, 255, 0.18), transparent 60%);
+}
+.pcard:hover .pcard__luz { opacity: 1; }
+.pcard__anel {
+  position: absolute; left: 50%; top: 50%; width: 62%; aspect-ratio: 1; border-radius: 50%; translate: -50% -50%;
+  border: 1px solid rgba(255, 255, 255, 0.16); transition: scale 1s var(--ease-out);
+}
+.pcard__anel::before { content: ''; position: absolute; inset: 18%; border-radius: 50%; border: 1px dashed rgba(255, 255, 255, 0.14); animation: gira-anel 30s linear infinite; }
+.pcard:hover .pcard__anel { scale: 1.12; }
+.pcard__glifo {
+  position: absolute; left: 50%; top: 50%; width: 26%; aspect-ratio: 1; translate: -50% -50%; display: grid; place-items: center;
+  border-radius: 28%; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px); box-shadow: 0 20px 40px -10px hsl(var(--h) 80% 20% / 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transition: transform 0.9s var(--ease-out);
+}
+.pcard__glifo svg { width: 52%; height: 52%; fill: none; stroke: #fff; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+:root[data-theme='light'] .pcard__glifo { background: rgba(255, 255, 255, 0.55); }
+:root[data-theme='light'] .pcard__glifo svg { stroke: hsl(var(--h) 60% 30%); }
+.pcard:hover .pcard__glifo { transform: translateZ(40px) scale(1.08) rotate(-4deg); }
+.pcard__chip {
+  position: absolute; left: var(--x); top: var(--y); width: 15%; aspect-ratio: 1; translate: -50% -50%; display: grid; place-items: center;
+  border-radius: 26%; background: rgba(12, 10, 20, 0.55); border: 1px solid rgba(255, 255, 255, 0.14); backdrop-filter: blur(8px);
+  animation: boia 5s ease-in-out infinite; animation-delay: var(--d);
+  transition: left 0.9s var(--ease-out), top 0.9s var(--ease-out), scale 0.6s var(--ease-out);
+}
+:root[data-theme='light'] .pcard__chip { background: rgba(255, 255, 255, 0.7); border-color: rgba(0, 0, 0, 0.08); }
+.pcard__chip img, .pcard__chip svg { width: 56%; height: 56%; object-fit: contain; }
+:root[data-theme='dark'] .pcard__chip img.inverte, :root[data-theme='dark'] .pcard__icones img.inverte { filter: invert(1); }
+@keyframes boia { 50% { translate: -50% calc(-50% - 8px); } }
+.pcard:hover .pcard__chip { left: calc(var(--x) + (var(--x) - 50%) * 0.12); top: calc(var(--y) + (var(--y) - 50%) * 0.12); scale: 1.08; }
+.pcard__tipo { position: absolute; left: 16px; top: 16px; font-size: 11px; color: rgba(255, 255, 255, 0.8); padding: 5px 10px; border-radius: 999px; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(6px); }
+:root[data-theme='light'] .pcard__tipo { color: var(--texto); background: rgba(255, 255, 255, 0.6); }
+.pcard__vivo { position: absolute; right: 16px; top: 16px; display: inline-flex; align-items: center; gap: 7px; font-size: 11px; color: #5EE0A8; padding: 5px 10px; border-radius: 999px; background: rgba(0, 0, 0, 0.35); backdrop-filter: blur(6px); }
+.pcard__vivo b { width: 7px; height: 7px; border-radius: 50%; background: #5EE0A8; animation: vivo 1.8s infinite; }
+
+.pcard__corpo { display: flex; flex-direction: column; flex: 1; padding: 22px 24px 24px; }
+.pcard__nome { font-family: var(--serif); font-weight: 400; font-size: clamp(26px, 2.2vw, 32px); line-height: 1.1; letter-spacing: -0.01em; }
+.pcard__resumo { color: var(--suave); font-size: 15px; margin-top: 10px; flex: 1; }
+.pcard__rodape { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--linha); }
+.pcard__icones { display: flex; gap: 8px; }
+.pcard__icones img, .pcard__icones svg { width: 20px; height: 20px; object-fit: contain; opacity: 0.85; transition: transform 0.4s var(--ease-out), opacity 0.3s; }
+.pcard:hover .pcard__icones img, .pcard:hover .pcard__icones svg { opacity: 1; }
+.pcard__btn {
+  display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 16px; border-radius: 999px; flex: none;
+  font-size: 13.5px; font-weight: 500; background: var(--texto); color: var(--bg); transition: background-color 0.4s, color 0.4s, gap 0.4s var(--ease-out);
+}
+.pcard__btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.pcard:hover .pcard__btn { background: hsl(var(--h) 80% 68%); color: #0e0d13; gap: 12px; }
+
+@media (max-width: 1080px) {
+  .grade { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 860px) {
+  .sobre__grade { grid-template-columns: 1fr; }
+  .flutua { max-width: 300px; order: -1; margin-bottom: 36px; } /* respiro entre a foto (e os ícones de baixo) e o texto */
+  .numeros { grid-template-columns: 1fr; margin-top: 40px; }
+  .kb3d { height: 70vh; min-height: 440px; }
+  .kb3d__info { position: relative; top: 0; max-width: none; }
+  .kb3d__nome { font-size: 42px; }
+}
+@media (max-width: 640px) {
+  .grade { grid-template-columns: 1fr; }
+}
