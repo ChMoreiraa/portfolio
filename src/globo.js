@@ -194,7 +194,9 @@ export function criarGlobo({ canvas, reduzido, tema }) {
   const rotBase = Math.atan2(-base.x, base.z);
   globo.rotation.y = rotBase;
 
+  let temaG = tema;
   function aplicarTema(novo) {
+    temaG = novo;
     const c = cores[novo];
     pUni.uCor.value.set(c.ponto);
     oceanoMat.color.set(c.oceano);
@@ -286,6 +288,12 @@ export function criarGlobo({ canvas, reduzido, tema }) {
     base: null,
     aoQuadro: null,
     setTema: aplicarTema,
+    setDominio(on) {
+      if (!on) return aplicarTema(temaG);
+      pUni.uCor.value.set('#FFC08A');
+      atmUni.uCor.value.set('#FF7A18');
+      arcoUni.uCor.value.set('#FFB347');
+    },
     destruir() { rodando = false; ro.disconnect(); io.disconnect(); renderer.dispose(); },
   };
   return api;

@@ -202,12 +202,19 @@ export function criarRobo({ canvas, reduzido, aoPassar, aoClicar }) {
   const corLuzes = [luz.color, peitoMiolo.material.color, anelBase.material.color, olhosBrilho.material.color, bulboBrilho.material.color, peitoBrilho.material.color, halo.material.color];
 
   // Tamanho
+  // O canvas tem uma folga acima (--folga no CSS) para o brilho da antena não ser cortado quando o robô flutua.
+  // A câmera desenha o mesmo enquadramento de antes e só estende a imagem para cima: o robô não muda de tamanho nem de lugar.
+  let folga = 0;
   function redimensionar() {
     const w = canvas.clientWidth, h = canvas.clientHeight;
     if (!w || !h) return;
+    folga = parseFloat(getComputedStyle(canvas).getPropertyValue('--folga')) || 0;
+    const base = Math.max(1, h - folga);
     renderer.setSize(w, h, false);
-    camera.aspect = w / h;
-    camera.position.z = w / h < 0.75 ? 11.5 : 9;
+    camera.aspect = w / base;
+    camera.position.z = w / base < 0.75 ? 11.5 : 9;
+    if (folga) camera.setViewOffset(w, base, 0, -folga, w, h);
+    else camera.clearViewOffset();
     camera.updateProjectionMatrix();
   }
   const ro = new ResizeObserver(redimensionar);
@@ -374,7 +381,7 @@ export function criarRobo({ canvas, reduzido, aoPassar, aoClicar }) {
     topo.set(0, 2.05, 0);
     cabeca.localToWorld(topo.set(0, 1.75, 0));
     topo.project(camera);
-    api.balao = { x: (topo.x * 0.5 + 0.5) * canvas.clientWidth, y: (-topo.y * 0.5 + 0.5) * canvas.clientHeight };
+    api.balao = { x: (topo.x * 0.5 + 0.5) * canvas.clientWidth, y: (-topo.y * 0.5 + 0.5) * canvas.clientHeight - folga };
   }
   requestAnimationFrame(quadro);
 
