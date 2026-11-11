@@ -120,7 +120,16 @@ em { font-style: italic; }
 .topo.rolou { background: color-mix(in oklab, var(--bg) 78%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-color: var(--linha); }
 .topo__in { max-width: calc(var(--max) + var(--gutter) * 2); margin: 0 auto; padding: 18px var(--gutter); display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .topo__nome { display: flex; align-items: baseline; gap: 14px; }
-.topo__assin { font-family: var(--serif); font-size: 22px; letter-spacing: -0.01em; line-height: 1; }
+/* Marca </CHM>_ : no hover, as letras que faltam se abrem entre C, H e M */
+.marca { display: inline-flex; align-items: baseline; font-family: var(--mono); font-size: 18px; font-weight: 600; letter-spacing: -0.02em; line-height: 1; white-space: nowrap; }
+.marca__s { color: var(--acento); font-weight: 500; transition: color 0.4s; }
+.marca__nome { color: var(--texto); }
+.marca__x { display: inline-block; max-width: 0; opacity: 0; overflow: hidden; vertical-align: bottom; white-space: pre; transition: max-width 0.6s var(--ease-out), opacity 0.35s; }
+.topo__nome:hover .marca__x, .topo__nome:focus-visible .marca__x { max-width: 6em; opacity: 1; }
+.topo__nome:hover .marca__x:nth-child(2), .topo__nome:focus-visible .marca__x:nth-child(2) { transition-delay: 0.06s; }
+.topo__nome:hover .marca__x:nth-child(3), .topo__nome:focus-visible .marca__x:nth-child(3) { transition-delay: 0.12s; }
+.marca__cursor { color: var(--acento); margin-left: 2px; animation: marcaPisca 1.1s steps(1) infinite; }
+@keyframes marcaPisca { 50% { opacity: 0; } }
 .topo__status { display: flex; align-items: center; gap: 7px; font-size: 11px; color: var(--suave); }
 .topo__status i { width: 6px; height: 6px; border-radius: 50%; background: #5EE0A8; box-shadow: 0 0 0 3px rgba(94, 224, 168, 0.15); }
 .topo__nav { display: flex; gap: 6px; }
@@ -162,7 +171,8 @@ em { font-style: italic; }
   background: radial-gradient(circle at 50% 45%, color-mix(in oklab, var(--acento) 22%, transparent), transparent 62%);
   filter: blur(20px); pointer-events: none;
 }
-#robo { position: relative; width: 100%; height: 100%; display: block; }
+/* Folga acima do quadro do robô: o brilho da antena tem espaço quando ele flutua (robo.js compensa na câmera) */
+#robo { --folga: 120px; position: absolute; left: 0; top: calc(-1 * var(--folga)); width: 100%; height: calc(100% + var(--folga)); display: block; }
 .balao {
   position: absolute; left: 0; top: 0; z-index: 3; pointer-events: none; max-width: 240px; width: max-content;
   padding: 10px 14px; border-radius: 14px; font-size: 12.5px; line-height: 1.45;

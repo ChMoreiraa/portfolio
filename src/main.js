@@ -1,13 +1,27 @@
 import './estilo.css';
+import './estilo-v3.css';
+import './estilo-v4.css';
+import './estilo-v5.css';
+import './estilo-fluxo.css';
+import './estilo-demos.css';
+import './estilo-catalogo.css';
+import { montarFluxo } from './fluxo.js';
+import { renderTime, ligarTime } from './demos.js';
+import { renderBarbu, ligarBarbu, vitrineBarbu, ajustarVitrine } from './barbu.js';
+import './estilo-barbu.css';
+import './estilo-responsivo.css';
+import { areas, iconeCatalogo, corDe } from './catalogo.js';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SplitText } from 'gsap/SplitText';
 import Lenis from 'lenis';
 import { perfil } from './config.js';
-import { projetos, falasRobo, stack } from './conteudo.js';
+import { projetos, falasRobo, carreira } from './conteudo.js';
+import { renderTeclado, teclaDe, fileiras } from './teclas.js';
 import { visual } from './visuais.js';
-import { aplicar, t, getIdioma, setIdioma, aoTrocarIdioma } from './i18n.js';
+import { aplicar, registrar, t, getIdioma, setIdioma, aoTrocarIdioma } from './i18n.js';
 import { alternarSom, clique, impacto } from './som.js';
+import { criarFundo } from './fundo.js';
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
@@ -21,6 +35,7 @@ const EASE = 'expo.inOut';
 let lenis = null;
 let robo = null;
 let globo = null;
+let fundo = null;
 let caseCtx = null;
 const estado = { vista: 'home', caseId: null, scrollHome: 0, homeIniciada: false, ocupado: false };
 
@@ -31,25 +46,268 @@ const tx = (o) => (typeof o === 'string' ? o : o[getIdioma()] ?? o.pt);
 /* Renderização                                                        */
 /* ================================================================== */
 
+// Glifo de cada projeto (traço, 24×24)
+const GLIFOS = {
+  ombuds: '<path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',
+  agentes: '<circle cx="12" cy="5" r="2.2"/><circle cx="5" cy="17.5" r="2.2"/><circle cx="19" cy="17.5" r="2.2"/><circle cx="12" cy="12.5" r="1.7"/><path d="M12 7.2v3.6M10.6 13.6l-3.8 2.4M13.4 13.6l3.8 2.4"/>',
+  libras: '<path d="M8 13V6a1.5 1.5 0 0 1 3 0v5M11 11V4.5a1.5 1.5 0 0 1 3 0V11M14 11V6a1.5 1.5 0 0 1 3 0v7c0 4-2.5 7-6 7-2.5 0-4-1.3-5.2-3.4L4.2 13.5a1.5 1.5 0 0 1 2.6-1.5L8 14"/>',
+  verocar: '<path d="M4.5 16h15v-3.2l-2.3-4.8H6.8L4.5 12.8z"/><circle cx="8" cy="16.5" r="1.9"/><circle cx="16" cy="16.5" r="1.9"/><path d="M4.5 12.8h15"/>',
+  cepflow: '<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/>',
+  barbu: '<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M8.1 8.1L20 20M8.1 15.9L20 4"/>',
+};
+const iconeDe = (nome) => fileiras.flatMap((f) => f.teclas).find((k) => k.nome === nome);
+const iconeHtml = (nome, cls = '') => {
+  const k = iconeDe(nome);
+  if (!k) return '';
+  return k.img
+    ? `<img class="${cls} ${k.inverte ? 'inverte' : ''}" src="${k.img}" alt="${nome}" title="${nome}" draggable="false" />`
+    : `<svg class="${cls}" viewBox="0 0 24 24" role="img" aria-label="${nome}"><title>${nome}</title><path fill="${k.cor === 'currentColor' ? 'currentColor' : k.cor}" d="${k.svg}"/></svg>`;
+};
+// Posições dos ícones que orbitam a capa (em % da capa)
+const ORBITA = [[16, 26], [82, 22], [86, 70], [14, 74], [50, 12], [52, 88]];
+
 function renderGrade() {
   $('#grade').innerHTML = projetos.map((p, i) => `
-    <a class="card" href="/trabalhos/${p.id}" data-id="${p.id}" style="--span:${p.span}" data-cursor="cursor.case">
-      <div class="card__vis">${visual(p.visual, getIdioma())}</div>
-      <div class="card__meta">
-        <p class="card__linha mono"><span>${String(i + 1).padStart(2, '0')}</span><span>${t(`tipo.${p.tipo}`)}</span></p>
-        <h3 class="card__nome">${nomeDe(p)}</h3>
-        <p class="card__resumo">${tx(p.resumo)}</p>
-        <ul class="card__tags mono">${p.stack.slice(0, 4).map((s) => `<li>${s}</li>`).join('')}</ul>
+    <a class="pcard" href="/trabalhos/${p.id}" data-id="${p.id}" style="--h:${p.hue}">
+      <div class="pcard__capa">
+        <div class="pcard__grade" aria-hidden="true"></div>
+        <div class="pcard__luz" aria-hidden="true"></div>
+        <div class="pcard__anel" aria-hidden="true"></div>
+        ${p.icones.map((n, j) => `<span class="pcard__chip" style="--x:${ORBITA[j][0]}%;--y:${ORBITA[j][1]}%;--d:${j * 0.4}s">${iconeHtml(n)}</span>`).join('')}
+        <span class="pcard__glifo"><svg viewBox="0 0 24 24" aria-hidden="true">${GLIFOS[p.id]}</svg></span>
+        <span class="pcard__tipo mono">${String(i + 1).padStart(2, '0')} · ${t(`tipo.${p.tipo}`)}</span>
+        ${p.vivo ? `<span class="pcard__vivo mono"><b></b>${t('card.vivo')}</span>` : ''}
+      </div>
+      <div class="pcard__corpo">
+        <h3 class="pcard__nome">${nomeDe(p)}</h3>
+        <p class="pcard__resumo">${tx(p.resumo)}</p>
+        <div class="pcard__rodape">
+          <span class="pcard__icones">${p.icones.map((n) => iconeHtml(n)).join('')}</span>
+          <span class="pcard__btn"><span>${t('card.btn')}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span>
+        </div>
       </div>
     </a>`).join('');
+  ligarPcards();
 }
 
-function renderStack() {
-  $('#stack').innerHTML = Object.entries(stack).map(([k, itens]) => `
-    <div class="stack__col" data-reveal>
-      <p class="mono">${t(`stack.${k}`)}</p>
-      <ul>${itens.map((i) => `<li>${i}</li>`).join('')}</ul>
-    </div>`).join('');
+// Inclinação 3D e borda que acende seguindo o mouse
+function ligarPcards() {
+  if (!ponteiroFino || reduzido) return;
+  $$('.pcard').forEach((el) => {
+    const rx = gsap.quickTo(el, 'rotationX', { duration: 0.6, ease: 'power3' });
+    const ry = gsap.quickTo(el, 'rotationY', { duration: 0.6, ease: 'power3' });
+    gsap.set(el, { transformPerspective: 1000 });
+    el.addEventListener('pointermove', (e) => {
+      const r = el.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+      el.style.setProperty('--mx', `${px * 100}%`);
+      el.style.setProperty('--my', `${py * 100}%`);
+      rx((0.5 - py) * 7);
+      ry((px - 0.5) * 9);
+    });
+    el.addEventListener('pointerleave', () => { rx(0); ry(0); });
+  });
+}
+
+// Stacks: faixa "Ver tudo por área" que desce abaixo do teclado, com abas por área, e recolhe de novo
+function ligarCatalogo() {
+  const btn = $('#btn-catalogo'), txt = $('#cat-btn-txt'), painel = $('#cat-painel');
+  const chips = $('#cat-chips'), corpo = $('#cat-corpo');
+  let area = 'todas', aberto = false;
+  const unicos = () => [...new Map(areas.flatMap((a) => a.itens).map((k) => [k.nome, k])).values()];
+  // A página muda de altura: Lenis e ScrollTrigger precisam remedir
+  const remedir = () => { lenis?.resize(); ScrollTrigger.refresh(); };
+  const rotulo = () => { txt.textContent = t(aberto ? 'cat.recolher' : 'cat.botao'); };
+
+  function tile(k) {
+    return `<li class="cat__item" style="--cor:${corDe(k)}">
+      <span class="cat__ic">${iconeCatalogo(k)}</span>
+      <span class="cat__txt"><b>${k.nome}</b>${k.uso ? `<small>${tx(k.uso)}</small>` : ''}</span>
+    </li>`;
+  }
+  function render() {
+    $('#cat-total').textContent = `${unicos().length} ${t('cat.tecs')}`;
+    chips.innerHTML = [{ id: 'todas', nome: { pt: t('cat.todas'), en: t('cat.todas') }, itens: unicos() }, ...areas]
+      .map((a) => `<button type="button" role="tab" class="cat__chip ${area === a.id ? 'on' : ''}" aria-selected="${area === a.id}" data-area="${a.id}">${tx(a.nome)}<span>${a.itens.length}</span></button>`).join('');
+    const grupos = area === 'todas' ? areas : areas.filter((a) => a.id === area);
+    corpo.innerHTML = grupos.map((a) => `<section class="cat__grupo"><h4 class="mono">${tx(a.nome)} <span>${a.itens.length}</span></h4><ul>${a.itens.map(tile).join('')}</ul></section>`).join('');
+    requestAnimationFrame(() => { chips.querySelector('.on')?.scrollIntoView({ inline: 'nearest', block: 'nearest' }); atualizarSetas(); });
+  }
+  const cascata = (delay = 0) => {
+    if (!reduzido) gsap.from($$('.cat__item', corpo), { opacity: 0, y: 16, scale: 0.97, duration: 0.55, stagger: 0.012, ease: 'expo.out', delay });
+  };
+
+  function abrir() {
+    aberto = true;
+    render();
+    painel.hidden = false;
+    btn.setAttribute('aria-expanded', 'true');
+    btn.classList.add('on');
+    rotulo();
+    clique(600, 0.08, 0.04);
+    if (reduzido) return remedir();
+    gsap.fromTo(painel, { height: 0, opacity: 0 }, {
+      height: 'auto', opacity: 1, duration: 0.8, ease: 'expo.out',
+      onComplete: () => { gsap.set(painel, { clearProps: 'height' }); remedir(); },
+    });
+    cascata(0.15);
+  }
+  function fechar() {
+    aberto = false;
+    btn.setAttribute('aria-expanded', 'false');
+    btn.classList.remove('on');
+    rotulo();
+    clique(420, 0.06, 0.04);
+    const fim = () => { painel.hidden = true; gsap.set(painel, { clearProps: 'all' }); remedir(); };
+    // Se o botão saiu da tela (recolheu pelo fim da lista), a tela volta até ele junto com a faixa
+    const r = btn.getBoundingClientRect();
+    if (r.top < 0 || r.bottom > innerHeight) {
+      const y = scrollY + r.top - innerHeight * 0.45;
+      if (lenis) lenis.scrollTo(y, { duration: reduzido ? 0 : 0.9, force: true });
+      else scrollTo({ top: y, behavior: reduzido ? 'auto' : 'smooth' });
+    }
+    if (reduzido) return fim();
+    gsap.to(painel, { height: 0, opacity: 0, duration: 0.6, ease: 'expo.inOut', onComplete: fim });
+  }
+  // Setas das abas: no celular as categorias rolam de lado; a seta mostra que tem mais e leva até elas
+  const setas = $$('[data-rolar]');
+  const atualizarSetas = () => {
+    const max = chips.scrollWidth - chips.clientWidth;
+    setas[0].hidden = chips.scrollLeft <= 4;
+    setas[1].hidden = max <= 4 || chips.scrollLeft >= max - 4;
+  };
+  setas.forEach((s) => s.addEventListener('click', () => {
+    chips.scrollBy({ left: Number(s.dataset.rolar) * chips.clientWidth * 0.7, behavior: reduzido ? 'auto' : 'smooth' });
+    clique(1000, 0.04, 0.03);
+  }));
+  chips.addEventListener('scroll', atualizarSetas, { passive: true });
+  new ResizeObserver(atualizarSetas).observe(chips);
+
+  rotulo();
+  btn.addEventListener('click', () => (aberto ? fechar() : abrir()));
+  $('#cat-recolher').addEventListener('click', fechar);
+  chips.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-area]');
+    if (!b || b.dataset.area === area) return;
+    area = b.dataset.area;
+    clique(1100, 0.04, 0.03);
+    // A troca de aba muda a altura da faixa: anima da altura velha para a nova
+    const antes = painel.offsetHeight;
+    render();
+    if (reduzido) return remedir();
+    gsap.fromTo(painel, { height: antes }, { height: 'auto', duration: 0.5, ease: 'expo.out', onComplete: () => { gsap.set(painel, { clearProps: 'height' }); remedir(); } });
+    cascata();
+  });
+  aoTrocarIdioma(() => { rotulo(); if (aberto) render(); });
+}
+
+// Stacks: teclado 3D (Three.js). Sem WebGL, cai para o teclado em HTML.
+let kb3d = null;
+async function renderStack() {
+  fileiras.forEach((f) => registrar(`fil.${f.id}`, f.nome));
+  const teclas = fileiras.flatMap((f) => f.teclas.map((k) => ({ ...k, cat: f.id })));
+  const nome = $('#kb-nome'), uso = $('#kb-uso'), cat = $('#kb-cat');
+  // Em tela de toque não existe "passar o mouse"
+  const toque = matchMedia('(pointer: coarse)').matches;
+  const padrao = () => { nome.textContent = t('stacks.inicio'); uso.textContent = t(toque ? 'stacks.inicioUsoToque' : 'stacks.inicioUso'); cat.textContent = ''; };
+  padrao();
+  const testa = document.createElement('canvas');
+  if (!(testa.getContext('webgl2') || testa.getContext('webgl'))) {
+    $('#kb3d').hidden = true;
+    $('#teclado-area').innerHTML = renderTeclado(getIdioma());
+    ligarTeclado();
+    return;
+  }
+  const { criarTeclado3d } = await import('./teclado3d.js');
+  let ultimo = null;
+  kb3d = criarTeclado3d({
+    canvas: $('#kb3d-canvas'),
+    teclas,
+    reduzido,
+    aoFocar: (k, forte) => {
+      if (!k) { if (!forte) padrao(); ultimo = null; cursor.rotulo(null); return; }
+      if (k !== ultimo) {
+        ultimo = k;
+        nome.textContent = k.nome;
+        uso.textContent = tx(k.uso);
+        cat.textContent = tx(fileiras.find((f) => f.id === k.cat).nome);
+        $('#kb3d').style.setProperty('--luz', k.corLuz ?? k.cor);
+        gsap.fromTo(nome, { yPercent: 40, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.45, ease: 'expo.out' });
+        clique(1400 + Math.random() * 400, 0.03, forte ? 0.05 : 0.025);
+      }
+    },
+  });
+  kb3d?.setTema(html.dataset.theme);
+  aoTrocarIdioma(padrao);
+  addEventListener('keydown', (e) => {
+    if (!kb3d || e.target.closest('input, textarea') || e.key.length !== 1 || estado.vista !== 'home') return;
+    const r = $('#kb3d').getBoundingClientRect();
+    if (r.bottom < 0 || r.top > innerHeight) return;
+    kb3d.apertarLetra(e.key.toLowerCase());
+  });
+}
+
+function renderCarreira() {
+  carreira.forEach((c, i) => {
+    registrar(`car.${i}.titulo`, c.titulo);
+    registrar(`car.${i}.lugar`, c.lugar);
+    registrar(`car.${i}.desc`, c.desc);
+  });
+  $('#tempo').innerHTML = `
+    <div class="tempo__trilho" aria-hidden="true"><span class="tempo__prog"></span></div>
+    <ol class="tempo__lista">
+      ${carreira.map((c, i) => `
+        <li class="tempo__item ${i % 2 ? 'tempo__item--dir' : ''} ${c.atual ? 'tempo__item--atual' : ''}">
+          <span class="tempo__ponto" aria-hidden="true"></span>
+          <div class="tempo__card">
+            <p class="tempo__ano mono">${c.atual ? `<b data-i18n="carreira.atual"></b>` : ''}${c.ano ? `<span>${c.ano}</span>` : ''}</p>
+            <h3 class="tempo__titulo" data-i18n="car.${i}.titulo"></h3>
+            <p class="tempo__lugar mono" data-i18n="car.${i}.lugar"></p>
+            <p class="tempo__desc" data-i18n="car.${i}.desc"></p>
+            <ul class="tempo__tags mono">${c.tags.map((g) => `<li>${g}</li>`).join('')}</ul>
+          </div>
+        </li>`).join('')}
+    </ol>`;
+}
+
+/* Teclado: hover afunda a tecla e mostra no visor; letras do teclado físico apertam as teclas. */
+let tecladoLigado = false;
+function ligarTeclado() {
+  const visorNome = $('#visor-nome');
+  const visorUso = $('#visor-uso');
+  const padrao = () => { visorNome.textContent = t('stacks.visor'); visorUso.textContent = t('stacks.visorUso'); };
+  padrao();
+  const apertar = (el, ms = 220) => {
+    el.classList.add('apertada');
+    clearTimeout(el._t);
+    el._t = setTimeout(() => el.classList.remove('apertada'), ms);
+  };
+  const mostrar = (el) => {
+    const k = teclaDe(el);
+    visorNome.textContent = k.nome;
+    visorUso.textContent = tx(k.uso);
+    $('#visor').style.setProperty('--luz', k.corLuz ?? k.cor);
+  };
+  $$('#teclado .tecla:not(.tecla--mod)').forEach((el) => {
+    el.addEventListener('pointerenter', () => { el.classList.add('apertada'); mostrar(el); clique(1500 + Math.random() * 300, 0.03, 0.03); });
+    el.addEventListener('pointerleave', () => el.classList.remove('apertada'));
+    el.addEventListener('focus', () => mostrar(el));
+    el.addEventListener('click', () => { apertar(el); mostrar(el); clique(1200, 0.04, 0.04); });
+  });
+  $('#teclado').addEventListener('pointerleave', padrao);
+
+  if (tecladoLigado) return;
+  tecladoLigado = true;
+  // Teclado físico: a letra aperta as teclas que começam com ela
+  addEventListener('keydown', (e) => {
+    if (e.target.closest('input, textarea') || e.key.length !== 1 || estado.vista !== 'home') return;
+    const r = $('#teclado')?.getBoundingClientRect();
+    if (!r || r.bottom < 0 || r.top > innerHeight) return;
+    const letra = e.key.toLowerCase();
+    const alvos = $$('#teclado .tecla:not(.tecla--mod)').filter((el) => teclaDe(el).nome.toLowerCase().startsWith(letra));
+    alvos.forEach((el) => apertar(el, 260));
+    if (alvos[0]) { mostrar(alvos[0]); clique(1300, 0.04, 0.04); }
+  });
 }
 
 function renderCase(p) {
@@ -66,7 +324,7 @@ function renderCase(p) {
       <figcaption class="mono">${tx(g.legenda)}</figcaption>
     </figure>`).join('');
   const demo = p.demo ? `
-    <section class="case__bloco">
+    <section class="case__bloco" id="testar">
       <h2 class="case__rot mono">${t('demo.titulo')}</h2>
       <form class="demo" id="demo" autocomplete="off" data-reveal>
         <label class="mono" for="demo-cep">${t('demo.rotulo')}</label>
@@ -78,6 +336,59 @@ function renderCase(p) {
         <pre class="demo__saida mono" id="demo-saida"><span class="demo__vazio">// GET https://cepflow.onrender.com/api/cep/{cep}</span></pre>
       </form>
     </section>` : '';
+  const embed = p.embed ? `
+    <section class="case__bloco case__bloco--largo" id="testar">
+      <h2 class="case__rot mono">${t('embed.titulo')}</h2>
+      <div class="embed" data-reveal>
+        <div class="embed__barra mono"><i></i><i></i><i></i><span>${p.embed.replace('https://', '').replace(/\/$/, '')}</span>
+          <a href="${p.embed}" target="_blank" rel="noopener">${t('embed.aba')} ↗</a></div>
+        <div class="embed__tela" id="embed-tela">
+          <div class="embed__capa">
+            <p>${t('embed.texto')}</p>
+            <button class="btn btn--cheio" type="button" id="embed-carregar">${t('embed.botao')}</button>
+            <p class="embed__priv mono">${t('embed.privacidade')}</p>
+          </div>
+        </div>
+      </div>
+    </section>` : '';
+  const sim = p.simulacao ? `
+    <section class="case__bloco case__bloco--largo" id="testar">
+      <h2 class="case__rot mono">${t('embed.titulo')}</h2>
+      <div data-reveal>${renderBarbu(getIdioma())}</div>
+    </section>` : '';
+  const time = p.timeDemo ? `
+    <section class="case__bloco case__bloco--largo" id="testar">
+      <h2 class="case__rot mono">${getIdioma() === 'pt' ? 'O time em ação' : 'The team in action'}</h2>
+      <div data-reveal>${renderTime(getIdioma())}</div>
+    </section>` : '';
+  const cep = p.front ? `
+    <section class="case__bloco case__bloco--largo" id="testar">
+      <h2 class="case__rot mono">${t('embed.titulo')}</h2>
+      <div class="cfx" data-reveal>
+        <div class="cfx__palco">
+          <div class="cfx__fone">
+            <span class="cfx__ilha"></span>
+            <div class="cfx__barra">
+              <div class="cfx__url mono"><b>🔒</b><span data-cf-url>cepflow.netlify.app</span></div>
+              <div class="cfx__abas" role="tablist">
+                <button type="button" class="on" data-cf="app">App</button>
+                <button type="button" data-cf="swagger">Swagger</button>
+              </div>
+            </div>
+            <div class="cfx__tela"><iframe data-cf-frame src="${p.front}" title="CEPFlow" loading="lazy"></iframe></div>
+          </div>
+        </div>
+        <div class="cfx__lado">
+          <div class="bbx__ev"><p class="bbx__ev-t mono">${getIdioma() === 'pt' ? 'Front-end real · Netlify' : 'Real front-end · Netlify'}</p><p>${getIdioma() === 'pt' ? 'Este é o front do projeto, em HTML, CSS e JS puro, chamando a API de verdade. Digite um CEP no celular.' : 'This is the project front-end, plain HTML, CSS and JS, calling the real API. Type a postal code on the phone.'}</p></div>
+          <div class="bbx__ev"><p class="bbx__ev-t mono">${getIdioma() === 'pt' ? 'API · FastAPI no Render' : 'API · FastAPI on Render'}</p><p>${getIdioma() === 'pt' ? 'Toque em Swagger no topo do celular para ver e testar os endpoints direto na documentação gerada pelo FastAPI.' : 'Tap Swagger at the top of the phone to see and try the endpoints in the docs generated by FastAPI.'}</p></div>
+          <div class="bbx__ev"><p class="bbx__ev-t mono">${getIdioma() === 'pt' ? 'Primeira consulta lenta?' : 'Slow first lookup?'}</p><p>${t('demo.acordando')}</p></div>
+          <p class="cfx__links"><a class="btn" href="${p.front}" target="_blank" rel="noopener">App ↗</a> <a class="btn" href="${p.swagger}" target="_blank" rel="noopener">Swagger ↗</a></p>
+        </div>
+      </div>
+    </section>` : '';
+  const testar = p.embed || p.demo || p.simulacao || p.timeDemo || p.front
+    ? `<a class="btn btn--cheio case__testar" href="#testar" data-testar><span>${t('case.testar')}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6" /></svg></a>`
+    : '';
 
   return `
     <article class="case container">
@@ -85,28 +396,32 @@ function renderCase(p) {
         <a class="case__voltar mono" href="/#trabalhos" data-ancora="trabalhos">← ${t('case.voltar')}</a>
         <p class="case__meta mono">${String(i + 1).padStart(2, '0')} · ${t(`tipo.${p.tipo}`)}</p>
         <h1 class="case__nome"><span class="ln"><span>${nomeDe(p)}</span></span></h1>
-        <p class="case__resumo">${tx(p.resumo)}</p>
+        <div class="case__resumo"><p>${tx(p.resumo)}</p>${testar}</div>
         <dl class="case__info">
           <div><dt class="mono">${t('case.papel')}</dt><dd>${tx(p.papel)}</dd></div>
           <div><dt class="mono">${t('case.stack')}</dt><dd class="case__chips">${p.stack.map((s) => `<span>${s}</span>`).join('')}</dd></div>
           <div><dt class="mono">${t('case.links')}</dt><dd class="case__links">${links}</dd></div>
         </dl>
       </header>
-      <div class="case__hero" id="case-hero">${visual(p.visual, getIdioma())}</div>
+      <div class="case__hero" id="case-hero">${p.capaTelas ? vitrineBarbu() : visual(p.visual, getIdioma())}</div>
       ${legHero ? `<p class="case__leg mono">${tx(legHero.legenda)}</p>` : ''}
       <div class="case__corpo">
+        ${embed}
+        ${demo}
+        ${cep}
+        ${sim}
+        ${time}
         <section class="case__bloco"><h2 class="case__rot mono">${t('case.contexto')}</h2><p class="case__lead" data-reveal>${tx(p.contexto)}</p></section>
         <section class="case__bloco"><h2 class="case__rot mono">${t('case.desafio')}</h2><p class="case__lead" data-reveal>${tx(p.desafio)}</p></section>
         <section class="case__bloco"><h2 class="case__rot mono">${t('case.solucao')}</h2>
           <ol class="case__lista">${tx(p.solucao).map((s, j) => `<li data-reveal><span class="mono">${String(j + 1).padStart(2, '0')}</span><p>${s}</p></li>`).join('')}</ol>
         </section>
-        ${demo}
         <section class="case__bloco"><h2 class="case__rot mono">${t('case.destaques')}</h2>
           <div class="case__nums">${p.destaques.map((d) => `<div data-reveal><b>${getIdioma() === 'en' && d.nEn ? d.nEn : d.n}</b><span>${tx(d.rot)}</span></div>`).join('')}</div>
         </section>
         ${extras.length ? `<section class="case__bloco case__bloco--largo"><h2 class="case__rot mono">${t('case.galeria')}</h2><div class="case__galeria">${galeria}</div></section>` : ''}
       </div>
-      <a class="case__prox" href="/trabalhos/${prox.id}" data-cursor="cursor.case">
+      <a class="case__prox" href="/trabalhos/${prox.id}">
         <span class="mono">${t('case.proximo')}</span>
         <span class="case__prox-nome">${nomeDe(prox)} <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span>
       </a>
@@ -129,6 +444,7 @@ function mostrarHome(ancora, restaurar = true) {
   $('#case').innerHTML = '';
   $('#home').hidden = false;
   estado.vista = 'home';
+  fundo?.setSecao(null);
   estado.caseId = null;
   document.title = 'Carlos Henrique Moreira · ' + t('topo.papel');
   irPara(0, true);
@@ -150,14 +466,44 @@ function mostrarCase(id) {
   el.hidden = false;
   el.innerHTML = renderCase(p);
   estado.vista = 'case';
+  fundo?.setSecao('case');
   estado.caseId = id;
   document.title = `${nomeDe(p)} · Carlos Henrique Moreira`;
   irPara(0, true);
-  if (p.demo) ligarDemo();
+  ligarExtrasDoCase(p);
   if (!reduzido) gsap.set($$('[data-reveal]', el), { opacity: 0 });
   requestAnimationFrame(() => {
     ScrollTrigger.refresh();
     caseCtx = gsap.context(() => animarCase(el), el);
+  });
+}
+
+// Demo da API, embed da versão pública e o botão "Testar agora"
+function ligarExtrasDoCase(p) {
+  if (p.demo) ligarDemo();
+  if (p.simulacao) ligarBarbu($('#testar'), getIdioma(), clique);
+  if (p.capaTelas) ajustarVitrine($('#case-hero'));
+  if (p.front) {
+    const frame = $('[data-cf-frame]'), url = $('[data-cf-url]');
+    $$('[data-cf]').forEach((b) => b.addEventListener('click', () => {
+      const sw = b.dataset.cf === 'swagger';
+      $$('[data-cf]').forEach((x) => x.classList.toggle('on', x === b));
+      frame.src = sw ? p.swagger : p.front;
+      url.textContent = sw ? 'cepflow.onrender.com/docs' : 'cepflow.netlify.app';
+      clique(900, 0.05, 0.03);
+    }));
+  }
+  if (p.timeDemo) ligarTime($('#testar'), getIdioma(), clique);
+  $('[data-testar]')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    const y = $('#testar').getBoundingClientRect().top + scrollY - 90;
+    if (lenis) lenis.scrollTo(y, { duration: 1.2 }); else scrollTo(0, y);
+  });
+  $('#embed-carregar')?.addEventListener('click', () => {
+    const tela = $('#embed-tela');
+    tela.innerHTML = `<iframe src="${p.embed}" title="${nomeDe(p)}" allow="camera; fullscreen" loading="lazy"></iframe>`;
+    tela.classList.add('carregada');
+    clique(700, 0.1, 0.04);
   });
 }
 
@@ -233,8 +579,7 @@ function ligarRotas() {
     e.preventDefault();
     if (a.dataset.ancora) return navegar('/', { ancora: a.dataset.ancora });
     if (a.hasAttribute('data-home')) return navegar('/', { ancora: estado.vista === 'home' ? null : null });
-    const vis = a.classList.contains('card') ? $('.card__vis', a) : null;
-    navegar(href.split('#')[0], { origem: vis });
+    navegar(href.split('#')[0]);
   });
   $('#topo-link').addEventListener('click', (e) => { e.preventDefault(); irPara(0, false); });
   addEventListener('popstate', () => {
@@ -268,18 +613,108 @@ function animarHome() {
   if (reduzido) return;
   revelarTitulos($('#home'));
 
-  // Cards: a imagem abre de baixo para cima
-  $$('.card').forEach((card) => {
-    const tl = gsap.timeline({ scrollTrigger: { trigger: card, start: 'top 88%', toggleActions: "play none none none" } });
-    tl.from($('.card__vis', card), { clipPath: 'inset(100% 0 0 0 round 18px)', duration: 1.3, ease: 'expo.inOut' })
-      .from($('.card__vis > .vis', card), { scale: 1.25, duration: 1.6, ease: 'expo.out' }, 0.2)
-      .from($$('.card__meta > *', card), { opacity: 0, y: 16, duration: 0.9, stagger: 0.06, ease: 'expo.out' }, 0.5);
+  // Cards de projeto: sobem em cascata, a capa abre de baixo para cima
+  ScrollTrigger.batch(".pcard", {
+    start: "top 90%",
+    onEnter: (els) => {
+      gsap.fromTo(els, { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 1.1, ease: "expo.out", stagger: 0.1 });
+      gsap.fromTo(els.map((el) => $(".pcard__capa", el)), { clipPath: "inset(100% 0 0 0)" }, { clipPath: "inset(0% 0 0 0)", duration: 1.2, ease: "expo.inOut", stagger: 0.1 });
+    },
   });
+  gsap.set(".pcard", { opacity: 0 });
 
   // Linha do processo
-  gsap.fromTo('.processo__linha span', { scaleX: 0 }, {
-    scaleX: 1, ease: 'none',
-    scrollTrigger: { trigger: '.processo', start: 'top 75%', end: 'bottom 60%', scrub: true },
+  gsap.fromTo(".processo__linha span", { scaleX: 0 }, {
+    scaleX: 1, ease: "none",
+    scrollTrigger: { trigger: ".processo", start: "top 75%", end: "bottom 60%", scrub: true },
+  });
+
+  // Sobre: números contam do zero sempre que a seção aparece (descendo ou subindo) e no hover
+  $$(".numero__desenho--grade").forEach((d) => (d.innerHTML = "<i></i>".repeat(40)));
+  $$(".numero__desenho--teclas").forEach((d) => (d.innerHTML = "<i></i>".repeat(30)));
+  const contar = (card) => {
+    const b = $("b", card), alvo = Number(b.dataset.alvo), suf = b.dataset.sufixo || "";
+    const pecas = $$(".numero__desenho > *", card);
+    const obj = { v: 0 };
+    gsap.killTweensOf(card._obj || {});
+    card._obj = obj;
+    gsap.to(obj, {
+      v: alvo, duration: 1.6 + Math.min(alvo, 40) * 0.01, ease: "power2.out",
+      onUpdate: () => {
+        const n = Math.round(obj.v);
+        b.textContent = n + (n === alvo ? suf : "");
+        const acesas = Math.round((obj.v / alvo) * pecas.length);
+        pecas.forEach((p, i) => p.classList.toggle("on", i < acesas));
+      },
+    });
+  };
+  const zerar = (card) => {
+    gsap.killTweensOf(card._obj || {});
+    $("b", card).textContent = "0";
+    $$(".numero__desenho > *", card).forEach((p) => p.classList.remove("on"));
+  };
+  $$(".numero").forEach((card, i) => {
+    ScrollTrigger.create({
+      trigger: card, start: "top 92%", end: "bottom 8%",
+      onEnter: () => setTimeout(() => contar(card), i * 120),
+      onEnterBack: () => setTimeout(() => contar(card), i * 120),
+      onLeave: () => zerar(card),
+      onLeaveBack: () => zerar(card),
+    });
+    card.addEventListener("pointerenter", () => { zerar(card); contar(card); });
+  });
+  // Idiomas: as barras enchem do zero toda vez que a seção aparece (descendo ou subindo)
+  const barras = $$(".idioma__barra i");
+  const encher = () => gsap.fromTo(barras, { scaleX: 0 }, { scaleX: 1, duration: 1.4, ease: "expo.out", stagger: 0.15, overwrite: true });
+  const esvaziar = () => gsap.set(barras, { scaleX: 0, overwrite: true });
+  ScrollTrigger.create({
+    trigger: ".idiomas", start: "top 92%", end: "bottom 8%",
+    onEnter: encher, onEnterBack: encher, onLeave: esvaziar, onLeaveBack: esvaziar,
+  });
+
+  // Foto flutuante: entra e segue o mouse de leve
+  gsap.from("#flutua", {
+    opacity: 0, scale: 0.85, y: 40, duration: 1.6, ease: "expo.out",
+    scrollTrigger: { trigger: "#flutua", start: "top 85%", toggleActions: "play none none none" },
+  });
+  if (ponteiroFino) {
+    const corpo = $("#flutua-corpo");
+    const fx = gsap.quickTo(corpo, "x", { duration: 1.2, ease: "power3" });
+    const fr = gsap.quickTo(corpo, "rotationY", { duration: 1.2, ease: "power3" });
+    $("#sobre").addEventListener("pointermove", (e) => {
+      const r = $("#flutua").getBoundingClientRect();
+      const dx = (e.clientX - (r.left + r.width / 2)) / innerWidth;
+      fx(dx * 30); fr(dx * 14);
+      // Os ícones andam no sentido contrário, cada um com sua profundidade
+      const dy = (e.clientY - (r.top + r.height / 2)) / innerHeight;
+      $$('#flutua-icones .ficone').forEach((el) => {
+        const z = Number(el.dataset.z) || 1;
+        gsap.to(el, { x: -dx * 46 * z, y: -dy * 30 * z, duration: 1.4, ease: 'power3.out', overwrite: 'auto' });
+      });
+    });
+  }
+
+  // Teclado 3D: o quadro aparece com profundidade
+  gsap.from("#kb3d", {
+    opacity: 0, y: 50, duration: 1.4, ease: "expo.out",
+    scrollTrigger: { trigger: "#kb3d", start: "top 85%", toggleActions: "play none none none" },
+  });
+
+  // Carreira: a linha desenha com o scroll e cada marco acende quando ela passa
+  gsap.fromTo('.tempo__prog', { scaleY: 0 }, {
+    scaleY: 1, ease: 'none',
+    scrollTrigger: { trigger: '.tempo__lista', start: 'top 65%', end: 'bottom 55%', scrub: 0.6 },
+  });
+  // No celular a linha do tempo é uma coluna só: o card sobe em vez de vir do lado (vindo do lado, vazava da tela)
+  const tempoEstreito = matchMedia('(max-width: 860px)').matches;
+  $$('.tempo__item').forEach((item) => {
+    const card = $('.tempo__card', item);
+    gsap.from(card, {
+      opacity: 0, duration: 1.1, ease: 'expo.out',
+      ...(tempoEstreito ? { y: 40 } : { x: item.classList.contains('tempo__item--dir') ? 60 : -60 }),
+      scrollTrigger: { trigger: item, start: 'top 80%', toggleActions: 'play none none none' },
+    });
+    ScrollTrigger.create({ trigger: item, start: 'top 60%', toggleClass: { targets: item, className: 'aceso' } });
   });
 
   // Título do contato
@@ -338,7 +773,9 @@ async function ligarRobo() {
     aoPassar: (sim) => cursor.rotulo(sim ? t('cursor.robo') : null),
     aoClicar: () => {
       const falas = falasRobo[getIdioma()];
-      dizer(falas[indice % falas.length]);
+      const fala = falas[indice % falas.length];
+      // A dica do "ryoiki" fica mais tempo no balão, para dar tempo de digitar olhando
+      dizer(fala, fala.includes('ryoiki') ? 9000 : 2600);
       indice++;
       clique(880, 0.1, 0.04);
     },
@@ -403,6 +840,34 @@ function definirTema(novo) {
   try { localStorage.setItem('tema', novo); } catch {}
   $('meta[name="theme-color"]').setAttribute('content', novo === 'dark' ? '#0E0D13' : '#F4F2ED');
   globo?.setTema(novo);
+  kb3d?.setTema(novo);
+  fundo?.setTema(novo);
+}
+
+// Menu de tela cheia (celular e tablet): o topo fica por cima, com idioma e tema à mão
+function ligarMenu() {
+  const btn = $('#btn-menu'), menu = $('#menu-m');
+  let aberto = false;
+  function alternar(abrir = !aberto) {
+    if (abrir === aberto) return;
+    aberto = abrir;
+    html.classList.toggle('menu-aberto', aberto);
+    btn.setAttribute('aria-expanded', String(aberto));
+    menu.setAttribute('aria-hidden', String(!aberto));
+    if (aberto) {
+      lenis?.stop();
+      clique(700, 0.05, 0.03);
+      if (!reduzido) gsap.fromTo($$('.menu-m__nav a, .menu-m__pe', menu), { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, stagger: 0.05, ease: 'expo.out', delay: 0.12 });
+    } else {
+      lenis?.start();
+    }
+  }
+  btn.addEventListener('click', () => alternar());
+  // O link navega pelo roteador global (data-ancora); aqui só fecha o menu
+  menu.addEventListener('click', (e) => { if (e.target.closest('a')) alternar(false); });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && aberto) alternar(false); });
+  // Se a tela crescer até o menu do topo voltar, fecha o de tela cheia
+  matchMedia('(min-width: 861px)').addEventListener('change', (e) => { if (e.matches) alternar(false); });
 }
 
 function ligarControles() {
@@ -437,15 +902,24 @@ function ligarControles() {
   });
   aoTrocarIdioma(() => {
     renderGrade();
-    renderStack();
-    $$('#grade .card, #stack [data-reveal]').forEach((el) => gsap.set(el, { clearProps: 'all' }));
+    montarFluxo($('#fluxo-raiz'), { idioma: getIdioma(), reduzido, clique });
+    $$('#grade .card').forEach((el) => gsap.set(el, { clearProps: 'all' }));
+    $$('#teclado .tecla:not(.tecla--mod)').forEach((el) => {
+      const k = teclaDe(el);
+      el.setAttribute('aria-label', `${k.nome}: ${tx(k.uso)}`);
+    });
+    // O visor só existe no teclado HTML de reserva (sem WebGL)
+    const vNome = $('#visor-nome'), vUso = $('#visor-uso');
+    if (vNome) vNome.textContent = t('stacks.visor');
+    if (vUso) vUso.textContent = t('stacks.visorUso');
     atualizarWhats();
     if (estado.vista === 'case') {
       const el = $('#case');
       caseCtx?.revert();
-      el.innerHTML = renderCase(projetos.find((p) => p.id === estado.caseId));
+      const p = projetos.find((x) => x.id === estado.caseId);
+      el.innerHTML = renderCase(p);
       gsap.set($$('[data-reveal]', el), { clearProps: 'all' });
-      if (projetos.find((p) => p.id === estado.caseId).demo) ligarDemo();
+      ligarExtrasDoCase(p);
     }
   });
 
@@ -463,8 +937,11 @@ function ligarControles() {
 function atualizarWhats() {
   const btn = $('#btn-whats');
   const num = (perfil.whatsapp || '').replace(/\D/g, '');
-  btn.hidden = !num;
+  $('#li-whats').hidden = !num;
   if (!num) return;
+  // 55 + DDD + número → (12) 98155-2453
+  const local = num.replace(/^55/, '');
+  $('#whats-txt').textContent = local.length === 11 ? `(${local.slice(0, 2)}) ${local.slice(2, 7)}-${local.slice(7)}` : local;
   const msg = getIdioma() === 'pt' ? 'Olá, Carlos! Vi seu portfólio e quero conversar.' : 'Hi Carlos! I saw your portfolio and would like to talk.';
   btn.href = `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
 }
@@ -478,13 +955,34 @@ function toast(msg) {
     .to(el, { y: 24, opacity: 0, duration: 0.4, ease: 'power2.in' }, 2.2);
 }
 
+// Ícones "jogados" em volta da foto do Sobre: posição (%), giro, profundidade e ritmo de cada um
+const ICONES_FOTO = [
+  { nome: 'Python', x: 4, y: 20, r: -10, z: 1.2, d: 5.6 },
+  { nome: 'Claude', x: 90, y: 13, r: 9, z: 0.8, d: 6.4 },
+  { nome: 'Java', x: -3, y: 55, r: 7, z: 0.9, d: 7.1 },
+  { nome: 'PostgreSQL', x: 95, y: 47, r: -8, z: 1.3, d: 5.9 },
+  { nome: 'GitHub', x: 9, y: 83, r: 12, z: 1, d: 6.8 },
+  { nome: 'Node.js', x: 86, y: 79, r: -6, z: 1.1, d: 6.1 },
+];
+function montarIconesFoto() {
+  const todos = areas.flatMap((a) => a.itens);
+  $('#flutua-icones').innerHTML = ICONES_FOTO.map((c, i) => {
+    const k = todos.find((x) => x.nome === c.nome);
+    if (!k) return '';
+    return `<span class="ficone" style="--x:${c.x}%;--y:${c.y}%;--r:${c.r}deg;--d:${c.d}s;--atraso:${-i * 0.9}s;--cor:${corDe(k)}" data-z="${c.z}">
+      <span class="ficone__in">${iconeCatalogo(k)}</span><small>${k.nome}</small>
+    </span>`;
+  }).join('');
+}
+
 function ligarPerfil() {
   $('#email-txt').textContent = perfil.email;
   $('#btn-linkedin').href = perfil.linkedin;
   $('#btn-github').href = perfil.github;
   atualizarWhats();
   const foto = $('#foto');
-  foto.addEventListener('load', () => $('#moldura').classList.remove('sem-foto'));
+  foto.addEventListener('load', () => $('#flutua').classList.remove('sem-foto'));
+  montarIconesFoto();
   if (perfil.foto) foto.src = perfil.foto;
   $('#btn-email').addEventListener('click', async () => {
     try {
@@ -493,6 +991,75 @@ function ligarPerfil() {
       clique(1320, 0.08, 0.04);
     } catch {
       location.href = `mailto:${perfil.email}`;
+    }
+  });
+}
+
+// Formulário de contato. O envio depende de perfil.formulario.modo (ver config.js).
+function ligarForm() {
+  const form = $('#form-contato');
+  const status = $('#form-status');
+  const btn = $('.form__enviar', form);
+  const txt = $('.form__txt', btn);
+  const reEmail = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+  function validar() {
+    let ok = true;
+    $$('input[required], textarea[required]', form).forEach((campo) => {
+      const erro = campo.parentElement.querySelector('.campo__erro');
+      let msg = '';
+      if (!campo.value.trim()) msg = t('form.obrigatorio');
+      else if (campo.type === 'email' && !reEmail.test(campo.value.trim())) msg = t('form.emailInvalido');
+      erro.textContent = msg;
+      campo.parentElement.classList.toggle('invalido', !!msg);
+      if (msg && ok) { campo.focus(); ok = false; }
+    });
+    return ok;
+  }
+  form.addEventListener('input', (e) => {
+    const c = e.target.closest('.campo');
+    if (c?.classList.contains('invalido')) { c.classList.remove('invalido'); c.querySelector('.campo__erro').textContent = ''; }
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    status.textContent = '';
+    status.className = 'form__status mono';
+    if (!validar()) return;
+    const dados = new FormData(form);
+    if (dados.get('bot-field')) return;
+    const modo = perfil.formulario?.modo ?? 'mailto';
+    const assunto = $('input[name="assunto"]:checked + span', form)?.textContent ?? '';
+
+    if (modo === 'mailto') {
+      const tel = String(dados.get('telefone') || '').trim();
+      const corpo = `${dados.get('mensagem')}\n\n— ${dados.get('nome')} (${dados.get('email')}${tel ? ` · ${tel}` : ''})`;
+      location.href = `mailto:${perfil.email}?subject=${encodeURIComponent(`[Portfólio] ${assunto} · ${dados.get('nome')}`)}&body=${encodeURIComponent(corpo)}`;
+      status.textContent = t('form.okMail');
+      status.classList.add('ok');
+      return;
+    }
+
+    form.classList.add('enviando');
+    txt.textContent = t('form.enviando');
+    try {
+      let r;
+      if (modo === 'netlify') {
+        r = await fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(dados).toString() });
+      } else {
+        r = await fetch(`https://formspree.io/f/${perfil.formulario.formspreeId}`, { method: 'POST', headers: { Accept: 'application/json' }, body: dados });
+      }
+      if (!r.ok) throw new Error(String(r.status));
+      form.reset();
+      status.textContent = t('form.ok');
+      status.classList.add('ok');
+      clique(1320, 0.12, 0.05);
+    } catch {
+      status.textContent = t('form.erro');
+      status.classList.add('erro');
+    } finally {
+      form.classList.remove('enviando');
+      txt.textContent = t('form.enviar');
     }
   });
 }
@@ -546,12 +1113,41 @@ function ligarDemo() {
 function ligarDominio() {
   const camada = $('#dominio');
   let ativo = false, buffer = '';
+  // Depois da expansão, a página inteira fica laranja por 15 s (o tema continua o mesmo)
+  const DURACAO = 15;
+  const aviso = document.createElement('div');
+  aviso.className = 'dominio-aviso mono';
+  aviso.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(aviso);
+  let timerLaranja;
+  function laranja() {
+    clearInterval(timerLaranja);
+    html.classList.add('dominio-laranja');
+    fundo?.setDominio(true);
+    kb3d?.setDominio?.(true);
+    globo?.setDominio?.(true);
+    let resta = DURACAO;
+    const pinta = () => (aviso.innerHTML = `領域展開 · ${t('dominio.volta')} <b>${resta}s</b>`);
+    pinta();
+    timerLaranja = setInterval(() => {
+      resta--;
+      pinta();
+      if (resta > 0) return;
+      clearInterval(timerLaranja);
+      html.classList.remove('dominio-laranja');
+      fundo?.setDominio(false);
+      kb3d?.setDominio?.(false);
+      globo?.setDominio?.(false);
+      robo?.setDominio(false);
+    }, 1000);
+  }
   function expandir() {
     if (ativo) return;
     ativo = true;
     impacto();
     robo?.setDominio(true);
     camada.classList.add('on');
+    setTimeout(laranja, 3000);
     const k = $('.dominio__kanji');
     if (!k.querySelector('span')) k.innerHTML = [...k.textContent].map((c) => `<span>${c}</span>`).join('');
     gsap.timeline({ onComplete: () => { camada.classList.remove('on'); ativo = false; } })
@@ -559,8 +1155,7 @@ function ligarDominio() {
       .fromTo('.dominio__kanji span', { opacity: 0, scale: 1.8, filter: 'blur(12px)' }, { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 0.6, stagger: 0.12, ease: 'expo.out' }, 0.5)
       .fromTo('.dominio__legenda', { opacity: 0, letterSpacing: '1em' }, { opacity: 1, letterSpacing: '0.4em', duration: 1, ease: 'expo.out' }, 1)
       .fromTo('.dominio__veredito', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8, ease: 'expo.out' }, 1.3)
-      .to(camada, { clipPath: 'circle(0% at 50% 50%)', duration: 0.9, ease: EASE }, 3.6)
-      .add(() => robo?.setDominio(false), 4.2);
+      .to(camada, { clipPath: 'circle(0% at 50% 50%)', duration: 0.9, ease: EASE }, 3.6);
   }
   addEventListener('keydown', (e) => {
     if (e.target.closest('input, textarea') || e.key.length !== 1) return;
@@ -595,12 +1190,27 @@ function iniciar() {
 
   renderGrade();
   renderStack();
+  renderCarreira();
+  montarFluxo($('#fluxo-raiz'), { idioma: getIdioma(), reduzido, clique });
   aplicar();
   ligarPerfil();
+  ligarForm();
+  ligarCatalogo();
   ligarControles();
+  ligarMenu();
   ligarCursor();
   ligarRotas();
   ligarDominio();
+
+  // Fundo em aurora: some no Home e no Stacks, muda de cor nas outras seções
+  fundo = criarFundo({ reduzido });
+  ["inicio", "sobre", "stacks", "trabalhos", "processo", "carreira", "contato"].forEach((id) => {
+    const el = id === "inicio" ? $(".hero") : $("#" + id);
+    ScrollTrigger.create({
+      trigger: el, start: "top 55%", end: "bottom 55%",
+      onToggle: (s) => { if (s.isActive && estado.vista === "home") fundo?.setSecao(id); },
+    });
+  });
 
   // Topo ganha fundo ao rolar
   ScrollTrigger.create({ start: 0, end: 'max', onUpdate: (s) => $('.topo').classList.toggle('rolou', s.scroll() > 40) });

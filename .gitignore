@@ -1,3 +1,6 @@
 ﻿node_modules
 dist
 .DS_Store
+
+# Página auxiliar de teste de telas (só no dev)
+teste-telas.html

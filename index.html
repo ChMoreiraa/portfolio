@@ -12,7 +12,7 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&family=Roboto:wght@400;500;700;900&display=swap" />
   <script>
     (function () {
       var tema;
@@ -30,13 +30,18 @@
   <header class="topo">
     <div class="topo__in">
       <a class="topo__nome" href="/" data-home>
-        <span class="topo__assin">Carlos H. Moreira</span>
+        <!-- Marca: </CHM>_ ; no hover as letras que faltam se abrem e vira </Carlos H. Moreira> -->
+        <span class="marca" aria-label="Carlos H. Moreira">
+          <span class="marca__s" aria-hidden="true">&lt;/</span><span class="marca__nome" aria-hidden="true">C<span class="marca__x">arlos&nbsp;</span>H<span class="marca__x">.&nbsp;</span>M<span class="marca__x">oreira</span></span><span class="marca__s" aria-hidden="true">&gt;</span><span class="marca__cursor" aria-hidden="true">_</span>
+        </span>
         <span class="topo__status mono"><i></i><span data-i18n="topo.papel">Engenheiro de IA</span></span>
       </a>
       <nav class="topo__nav" aria-label="Seções">
-        <a href="/#trabalhos" data-ancora="trabalhos"><span data-i18n="nav.trabalhos">Trabalhos</span></a>
-        <a href="/#processo" data-ancora="processo"><span data-i18n="nav.processo">Processo</span></a>
         <a href="/#sobre" data-ancora="sobre"><span data-i18n="nav.sobre">Sobre</span></a>
+        <a href="/#stacks" data-ancora="stacks"><span data-i18n="nav.stacks">Stacks</span></a>
+        <a href="/#trabalhos" data-ancora="trabalhos"><span data-i18n="nav.projetos">Projetos</span></a>
+        <a href="/#processo" data-ancora="processo"><span data-i18n="nav.processo">Processo</span></a>
+        <a href="/#carreira" data-ancora="carreira"><span data-i18n="nav.carreira">Carreira</span></a>
         <a href="/#contato" data-ancora="contato"><span data-i18n="nav.contato">Contato</span></a>
       </nav>
       <div class="topo__ctrl">
@@ -47,9 +52,25 @@
         <button class="ctrl" id="btn-tema" data-i18n-attr="aria-label:ui.tema;title:ui.tema">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" /><path d="M12 4a8 8 0 0 1 0 16z" class="tema__meio" /></svg>
         </button>
+        <button class="ctrl ctrl--menu" id="btn-menu" type="button" aria-expanded="false" aria-controls="menu-m" data-i18n-attr="aria-label:ui.menu">
+          <span class="hamb" aria-hidden="true"><i></i><i></i></span>
+        </button>
       </div>
     </div>
   </header>
+
+  <!-- Menu de tela cheia (celular e tablet) -->
+  <div class="menu-m" id="menu-m" aria-hidden="true" data-lenis-prevent>
+    <nav class="menu-m__nav" aria-label="Seções">
+      <a href="/#sobre" data-ancora="sobre"><small class="mono">01</small><span data-i18n="nav.sobre">Sobre</span></a>
+      <a href="/#stacks" data-ancora="stacks"><small class="mono">02</small><span data-i18n="nav.stacks">Stacks</span></a>
+      <a href="/#trabalhos" data-ancora="trabalhos"><small class="mono">03</small><span data-i18n="nav.projetos">Projetos</span></a>
+      <a href="/#processo" data-ancora="processo"><small class="mono">04</small><span data-i18n="nav.processo">Processo</span></a>
+      <a href="/#carreira" data-ancora="carreira"><small class="mono">05</small><span data-i18n="nav.carreira">Carreira</span></a>
+      <a href="/#contato" data-ancora="contato"><small class="mono">06</small><span data-i18n="nav.contato">Contato</span></a>
+    </nav>
+    <p class="menu-m__pe mono" data-i18n="topo.papel">Engenheiro de IA</p>
+  </div>
 
   <main id="conteudo">
     <!-- ================= HOME ================= -->
@@ -78,9 +99,98 @@
         </dl>
       </section>
 
-      <section class="secao container" id="trabalhos">
+      <section class="secao container sobre" id="sobre">
         <header class="secao__cab">
           <span class="secao__n mono">(01)</span>
+          <h2 class="secao__titulo" data-split data-i18n="sobre.titulo"></h2>
+        </header>
+        <div class="sobre__grade">
+          <div class="sobre__texto">
+            <p class="sobre__lead" data-split data-i18n="sobre.lead"></p>
+            <p data-reveal data-i18n="sobre.p1"></p>
+            <p data-reveal data-i18n="sobre.p2"></p>
+            <p class="sobre__fora" data-reveal><span class="mono" data-i18n="sobre.fora"></span><span data-i18n="sobre.forav"></span></p>
+            <div class="idiomas" data-reveal>
+              <p class="idiomas__rot mono" data-i18n="idiomas.titulo"></p>
+              <ul>
+                <li style="--n:1"><span class="idioma__sigla mono">PT</span><span class="idioma__nome" data-i18n="idiomas.pt"></span><span class="idioma__barra"><i></i></span><span class="idioma__nivel mono" data-i18n="idiomas.nativo"></span></li>
+                <li style="--n:.6"><span class="idioma__sigla mono">EN</span><span class="idioma__nome" data-i18n="idiomas.en"></span><span class="idioma__barra"><i></i></span><span class="idioma__nivel mono" data-i18n="idiomas.inter"></span></li>
+                <li style="--n:.6"><span class="idioma__sigla mono">ES</span><span class="idioma__nome" data-i18n="idiomas.es"></span><span class="idioma__barra"><i></i></span><span class="idioma__nivel mono" data-i18n="idiomas.inter"></span></li>
+              </ul>
+            </div>
+          </div>
+          <figure class="flutua sem-foto" id="flutua">
+            <div class="flutua__aura" aria-hidden="true"></div>
+            <div class="flutua__icones" id="flutua-icones" aria-hidden="true"></div>
+            <div class="flutua__corpo" id="flutua-corpo">
+              <img id="foto" alt="Carlos Henrique Moreira" />
+              <span class="flutua__mono" aria-hidden="true">CH</span>
+            </div>
+            <div class="flutua__sombra" aria-hidden="true"></div>
+          </figure>
+        </div>
+        <div class="numeros">
+          <div class="numero" data-tipo="anos">
+            <div class="numero__desenho" aria-hidden="true"><span></span><span></span><span></span></div>
+            <b data-alvo="3" data-sufixo="+">0</b><span data-i18n="num.anos"></span>
+            <em class="numero__dica mono" data-i18n="num.dica"></em>
+          </div>
+          <div class="numero" data-tipo="projetos">
+            <div class="numero__desenho numero__desenho--grade" aria-hidden="true"></div>
+            <b data-alvo="40" data-sufixo="+">0</b><span data-i18n="num.projetos"></span>
+            <em class="numero__dica mono" data-i18n="num.dica"></em>
+          </div>
+          <div class="numero" data-tipo="tecnologias">
+            <div class="numero__desenho numero__desenho--teclas" aria-hidden="true"></div>
+            <b data-alvo="30" data-sufixo="">0</b><span data-i18n="num.tecnologias"></span>
+            <em class="numero__dica mono" data-i18n="num.dica"></em>
+          </div>
+        </div>
+      </section>
+
+      <section class="secao container" id="stacks">
+        <header class="secao__cab">
+          <span class="secao__n mono">(02)</span>
+          <h2 class="secao__titulo" data-split data-i18n="stacks.titulo"></h2>
+          <p class="secao__sub" data-i18n="stacks.sub" data-reveal></p>
+        </header>
+        <div class="kb3d" id="kb3d">
+          <canvas id="kb3d-canvas" aria-label="Teclado 3D com as tecnologias"></canvas>
+          <div class="kb3d__info" aria-live="polite">
+            <p class="kb3d__dica mono" data-i18n="stacks.dica"></p>
+            <p class="kb3d__cat mono" id="kb-cat"></p>
+            <h3 class="kb3d__nome" id="kb-nome"></h3>
+            <p class="kb3d__uso" id="kb-uso"></p>
+          </div>
+        </div>
+        <div id="teclado-area"></div>
+        <div class="cat" id="cat">
+          <div class="cat__acao">
+            <button class="btn cat__btn" id="btn-catalogo" type="button" aria-expanded="false" aria-controls="cat-painel"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span id="cat-btn-txt"></span><svg class="cat__seta" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+          </div>
+          <div class="cat__painel" id="cat-painel" hidden>
+            <div class="cat__in">
+              <div class="cat__cab">
+                <h3 class="cat__titulo" data-i18n="cat.titulo"></h3>
+                <p class="cat__total mono" id="cat-total"></p>
+              </div>
+              <div class="cat__abas">
+                <button class="cat__seta-aba cat__seta-aba--esq" type="button" data-rolar="-1" aria-label="Categorias anteriores" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+                <div class="cat__chips" id="cat-chips" role="tablist"></div>
+                <button class="cat__seta-aba cat__seta-aba--dir" type="button" data-rolar="1" aria-label="Mais categorias" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+              </div>
+              <div class="cat__corpo" id="cat-corpo"></div>
+              <div class="cat__pe">
+                <button class="cat__recolher mono" id="cat-recolher" type="button"><span data-i18n="cat.recolher"></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="secao container" id="trabalhos">
+        <header class="secao__cab">
+          <span class="secao__n mono">(03)</span>
           <h2 class="secao__titulo" data-split data-i18n="trab.titulo"></h2>
           <p class="secao__sub" data-i18n="trab.sub" data-reveal></p>
         </header>
@@ -89,66 +199,93 @@
 
       <section class="secao container" id="processo">
         <header class="secao__cab">
-          <span class="secao__n mono">(02)</span>
+          <span class="secao__n mono">(04)</span>
           <h2 class="secao__titulo" data-split data-i18n="proc.titulo"></h2>
           <p class="secao__sub" data-i18n="proc.sub" data-reveal></p>
         </header>
-        <div class="processo">
-          <div class="processo__linha" aria-hidden="true"><span></span></div>
-          <ol class="processo__passos">
-            <li data-reveal><span class="processo__n">01</span><h3 data-i18n="proc.1t"></h3><p data-i18n="proc.1d"></p></li>
-            <li data-reveal><span class="processo__n">02</span><h3 data-i18n="proc.2t"></h3><p data-i18n="proc.2d"></p></li>
-            <li data-reveal><span class="processo__n">03</span><h3 data-i18n="proc.3t"></h3><p data-i18n="proc.3d"></p></li>
-            <li data-reveal><span class="processo__n">04</span><h3 data-i18n="proc.4t"></h3><p data-i18n="proc.4d"></p></li>
-          </ol>
-        </div>
+        <div id="fluxo-raiz"></div>
       </section>
 
-      <section class="secao container sobre" id="sobre">
+      <section class="secao container" id="carreira">
         <header class="secao__cab">
-          <span class="secao__n mono">(03)</span>
-          <h2 class="secao__titulo" data-split data-i18n="sobre.titulo"></h2>
+          <span class="secao__n mono">(05)</span>
+          <h2 class="secao__titulo" data-split data-i18n="carreira.titulo"></h2>
+          <p class="secao__sub" data-i18n="carreira.sub" data-reveal></p>
         </header>
-        <div class="sobre__grade">
-          <figure class="sobre__foto" data-reveal>
-            <div class="sobre__moldura sem-foto" id="moldura">
-              <img id="foto" alt="Carlos Henrique Moreira" />
-              <span class="sobre__mono" aria-hidden="true">CH</span>
-            </div>
-          </figure>
-          <div class="sobre__texto">
-            <p class="sobre__lead" data-split data-i18n="sobre.lead"></p>
-            <p data-reveal data-i18n="sobre.p1"></p>
-            <p data-reveal data-i18n="sobre.p2"></p>
-            <div class="stack" id="stack"></div>
-            <p class="sobre__fora" data-reveal><span class="mono" data-i18n="sobre.fora"></span><span data-i18n="sobre.forav"></span></p>
-          </div>
-        </div>
+        <div class="tempo" id="tempo"></div>
       </section>
 
       <section class="secao container contato" id="contato">
         <header class="secao__cab">
-          <span class="secao__n mono">(04)</span>
+          <span class="secao__n mono">(06)</span>
         </header>
         <div class="contato__grade">
           <div class="contato__texto">
             <h2 class="contato__titulo"><span class="ln"><span data-i18n="contato.titulo1"></span></span><span class="ln"><em data-i18n="contato.titulo2"></em></span></h2>
             <p class="contato__sub" data-reveal data-i18n="contato.sub"></p>
-            <button class="email" id="btn-email" data-reveal>
-              <span class="email__txt" id="email-txt"></span>
-              <span class="email__acao mono" data-i18n="contato.copiar"></span>
-            </button>
-            <div class="contato__links" data-reveal>
-              <a class="btn" id="btn-whats" target="_blank" rel="noopener" hidden>WhatsApp</a>
-              <a class="btn" id="btn-linkedin" target="_blank" rel="noopener">LinkedIn</a>
-              <a class="btn" id="btn-github" target="_blank" rel="noopener">GitHub</a>
+            <form class="form" id="form-contato" name="contato" method="POST" data-netlify="true" netlify-honeypot="bot-field" novalidate data-reveal>
+              <input type="hidden" name="form-name" value="contato" />
+              <p class="form__mel" aria-hidden="true"><label>Não preencha <input name="bot-field" tabindex="-1" autocomplete="off" /></label></p>
+              <div class="form__duo">
+                <label class="campo"><span class="mono" data-i18n="form.nome"></span><input name="nome" autocomplete="name" required /><em class="campo__erro"></em></label>
+                <label class="campo"><span class="mono" data-i18n="form.email"></span><input name="email" type="email" autocomplete="email" required /><em class="campo__erro"></em></label>
+              </div>
+              <label class="campo"><span class="mono"><span data-i18n="form.tel"></span> <small data-i18n="form.telOpc"></small></span><input name="telefone" type="tel" autocomplete="tel" inputmode="tel" placeholder="(12) 99999-9999" /><em class="campo__erro"></em></label>
+              <fieldset class="campo campo--chips">
+                <legend class="mono" data-i18n="form.assunto"></legend>
+                <label class="chip-op"><input type="radio" name="assunto" value="projeto" checked /><span data-i18n="form.a1"></span></label>
+                <label class="chip-op"><input type="radio" name="assunto" value="vaga" /><span data-i18n="form.a2"></span></label>
+                <label class="chip-op"><input type="radio" name="assunto" value="oportunidade" /><span data-i18n="form.a4"></span></label>
+                <label class="chip-op"><input type="radio" name="assunto" value="conversa" /><span data-i18n="form.a3"></span></label>
+              </fieldset>
+              <label class="campo"><span class="mono" data-i18n="form.msg"></span><textarea name="mensagem" rows="5" required data-i18n-attr="placeholder:form.msgPh"></textarea><em class="campo__erro"></em></label>
+              <div class="form__rodape">
+                <button class="btn btn--cheio form__enviar" type="submit"><span class="form__txt" data-i18n="form.enviar"></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></button>
+                <p class="form__status mono" id="form-status" role="status" aria-live="polite"></p>
+              </div>
+            </form>
+          </div>
+          <div class="contato__lado">
+            <figure class="contato__globo">
+              <canvas id="globo" aria-label="Planeta 3D: arraste para girar"></canvas>
+              <span class="globo__base mono" id="globo-base"><i></i>São José dos Campos</span>
+              <figcaption class="mono"><span data-i18n="contato.globo"></span> <b data-i18n="contato.arraste"></b></figcaption>
+            </figure>
+            <div class="dados" data-reveal>
+              <p class="dados__rot mono" data-i18n="contato.dados"></p>
+              <ul class="canais">
+                <li>
+                  <button class="canal" id="btn-email" type="button">
+                    <span class="canal__ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M4 7l8 6 8-6"/></svg></span>
+                    <span class="canal__txt"><b>E-mail</b><span id="email-txt"></span></span>
+                    <span class="canal__acao mono" data-i18n="contato.copiar"></span>
+                  </button>
+                </li>
+                <li id="li-whats" hidden>
+                  <a class="canal" id="btn-whats" target="_blank" rel="noopener">
+                    <span class="canal__ic canal__ic--whats"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="cheio" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm4.5 12.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3a.5.5 0 0 0 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.2c0-.1-.2-.2-.4-.3Z"/></svg></span>
+                    <span class="canal__txt"><b>WhatsApp</b><span id="whats-txt"></span></span>
+                    <span class="canal__acao mono" data-i18n="contato.mande"></span>
+                  </a>
+                </li>
+                <li>
+                  <a class="canal" id="btn-linkedin" target="_blank" rel="noopener">
+                    <span class="canal__ic canal__ic--in"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="cheio" d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9.5h4V21H3V9.5Zm7 0h3.8v1.6h.1c.5-1 1.8-2 3.8-2 4 0 4.8 2.6 4.8 6V21h-4v-5.2c0-1.2 0-2.9-1.8-2.9s-2 1.4-2 2.8V21h-4V9.5Z"/></svg></span>
+                    <span class="canal__txt"><b>LinkedIn</b><span>Carlos Henrique Moreira</span></span>
+                    <span class="canal__acao mono" data-i18n="contato.perfil"></span>
+                  </a>
+                </li>
+                <li>
+                  <a class="canal" id="btn-github" target="_blank" rel="noopener">
+                    <span class="canal__ic canal__ic--gh"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="cheio" d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.4-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.4 1.1 3 .9.1-.7.4-1.1.6-1.4-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.8 1a9.6 9.6 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .6 1.4.2 2.4.1 2.7.7.7 1 1.6 1 2.7 0 3.9-2.3 4.7-4.6 5 .4.3.7.9.7 1.9V21c0 .3.2.6.7.5A10 10 0 0 0 12 2Z"/></svg></span>
+                    <span class="canal__txt"><b>GitHub</b><span>@ChMoreiraa</span></span>
+                    <span class="canal__acao mono" data-i18n="contato.codigo"></span>
+                  </a>
+                </li>
+              </ul>
+              <p class="dados__local mono"><span data-i18n="form.local"></span> · São José dos Campos, SP</p>
             </div>
           </div>
-          <figure class="contato__globo">
-            <canvas id="globo" aria-label="Planeta 3D: arraste para girar"></canvas>
-            <span class="globo__base mono" id="globo-base"><i></i>São José dos Campos</span>
-            <figcaption class="mono"><span data-i18n="contato.globo"></span> <b data-i18n="contato.arraste"></b></figcaption>
-          </figure>
         </div>
       </section>
     </div>
