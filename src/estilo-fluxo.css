@@ -1,0 +1,90 @@
+/* Fluxo de automação da seção "Como eu trabalho" */
+.fluxo { border-radius: 22px; border: 1px solid var(--linha); background: color-mix(in oklab, var(--bg-2) 80%, transparent); backdrop-filter: blur(8px); overflow: hidden; }
+.fluxo__barra { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; padding: 14px 18px; border-bottom: 1px solid var(--linha); font-size: 12px; color: var(--suave); }
+.fluxo__nome { display: flex; align-items: center; gap: 8px; margin-right: auto; }
+.fluxo__nome i { width: 8px; height: 8px; border-radius: 50%; background: var(--fraco); transition: background-color 0.3s; }
+.fluxo.rodando .fluxo__nome i { background: #5EE0A8; box-shadow: 0 0 10px #5EE0A8; animation: pisca 1s steps(1) infinite; }
+.fluxo__opcao { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.fluxo__opcao input { accent-color: var(--acento); }
+.fluxo__exec {
+  display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 16px; border-radius: 999px;
+  background: var(--acento); color: var(--tinta); font: 500 12.5px var(--sans); transition: transform 0.3s, opacity 0.3s;
+}
+.fluxo__exec svg { width: 12px; height: 12px; fill: currentColor; }
+.fluxo__exec:hover { transform: translateY(-1px); }
+.fluxo.rodando .fluxo__exec { opacity: 0.5; pointer-events: none; }
+
+.fluxo__area { display: grid; grid-template-columns: minmax(0, 1fr) 280px; }
+.fluxo__rolagem { overflow-x: auto; overflow-y: hidden; padding: 10px 0; }
+.fluxo__rolagem > * { position: relative; }
+.fluxo__palco {
+  position: absolute; left: 0; top: 0; transform-origin: 0 0;
+  background-image: radial-gradient(color-mix(in oklab, var(--texto) 14%, transparent) 1px, transparent 1px); background-size: 22px 22px;
+}
+.fluxo__rolagem { position: relative; }
+.fluxo__rolagem::before { content: none; }
+.fluxo__fios { position: absolute; inset: 0; overflow: visible; }
+.fio { fill: none; stroke: var(--linha-2); stroke-width: 1.6; transition: stroke 0.4s; }
+.fio--nao { stroke-dasharray: 5 5; }
+.fio--volta { stroke-dasharray: 2 6; stroke-linecap: round; }
+.fio.vivo { stroke: var(--acento); stroke-width: 2.2; filter: drop-shadow(0 0 6px var(--acento)); }
+.fio.feito { stroke: color-mix(in oklab, var(--acento) 55%, var(--linha-2)); }
+#fl-seta path { fill: var(--linha-2); }
+.fio__rot {
+  position: absolute; translate: -50% -50%; font-size: 10.5px; padding: 3px 8px; border-radius: 999px; white-space: nowrap;
+  background: var(--bg); border: 1px solid var(--linha); color: var(--suave); pointer-events: none;
+}
+
+.no {
+  position: absolute; translate: -50% -50%; display: flex; align-items: center; gap: 10px; width: 150px; padding: 10px 12px;
+  border-radius: 14px; background: var(--bg-2); border: 1px solid var(--linha-2); cursor: grab; user-select: none; touch-action: none;
+  box-shadow: 0 10px 30px -14px rgba(0, 0, 0, 0.6); transition: border-color 0.3s, box-shadow 0.4s, background-color 0.3s;
+}
+.no.arrastando { cursor: grabbing; z-index: 3; box-shadow: 0 20px 40px -14px rgba(0, 0, 0, 0.7); }
+.no__ic { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 9px; background: color-mix(in oklab, var(--acento) 16%, transparent); color: var(--acento); }
+.no__ic svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.no__txt { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+.no__txt b { font-size: 12.5px; font-weight: 500; }
+.no__txt small { font-size: 10.5px; color: var(--suave); margin-top: 2px; }
+.no__ok { position: absolute; right: -7px; top: -7px; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; background: #5EE0A8; scale: 0; transition: scale 0.4s var(--ease-out); }
+.no__ok svg { width: 11px; height: 11px; fill: none; stroke: #062b1c; stroke-width: 3; }
+.no.feito .no__ok { scale: 1; }
+.no.ativo { border-color: var(--acento); box-shadow: 0 0 0 4px color-mix(in oklab, var(--acento) 18%, transparent), 0 0 30px -4px var(--acento); }
+.no.erro { border-color: #F87171; box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.18); }
+.no.erro .no__ic { background: rgba(248, 113, 113, 0.16); color: #F87171; }
+.no--gatilho .no__ic { background: rgba(245, 201, 90, 0.16); color: #F5C95A; }
+.no--humano .no__ic { background: rgba(94, 224, 168, 0.14); color: #5EE0A8; }
+.no--agente { width: 140px; }
+.no--fim .no__ic { background: color-mix(in oklab, var(--texto) 10%, transparent); color: var(--texto); }
+.no--decisao { width: 112px; height: 112px; padding: 0; justify-content: center; flex-direction: column; gap: 6px; background: transparent; border: 0; box-shadow: none; }
+.no--decisao::before {
+  content: ''; position: absolute; inset: 14px; rotate: 45deg; border-radius: 14px; background: var(--bg-2); border: 1px solid var(--linha-2);
+  transition: border-color 0.3s, box-shadow 0.4s;
+}
+.no--decisao > * { position: relative; }
+.no--decisao .no__ic { background: rgba(167, 139, 250, 0.16); }
+.no--decisao .no__txt { align-items: center; text-align: center; }
+.no--decisao .no__txt b { font-size: 11.5px; }
+.no--decisao.ativo, .no--decisao.erro { box-shadow: none; }
+.no--decisao.ativo::before { border-color: var(--acento); box-shadow: 0 0 24px -4px var(--acento); }
+.no--decisao.erro::before { border-color: #F87171; box-shadow: 0 0 24px -4px #F87171; }
+.no--decisao .no__ok { right: 6px; top: 6px; }
+.fluxo__pacote {
+  position: absolute; left: -7px; top: -7px; width: 14px; height: 14px; border-radius: 50%; background: #fff; opacity: 0; pointer-events: none;
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--acento) 40%, transparent), 0 0 20px 4px var(--acento); transition: opacity 0.3s; z-index: 4;
+}
+.fluxo__pacote.on { opacity: 1; }
+
+.fluxo__log { margin: 0; padding: 14px 16px; border-left: 1px solid var(--linha); font-size: 11px; line-height: 1.55; color: var(--suave); max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+.fluxo__log li { display: grid; grid-template-columns: 42px 1fr; gap: 6px; animation: entraLog 0.4s var(--ease-out); }
+.fluxo__log li span { color: var(--fraco); }
+.fluxo__log li.erro { color: #F87171; }
+.fluxo__log li.ok { color: #5EE0A8; }
+.fluxo__log li.vazio { display: block; color: var(--fraco); }
+@keyframes entraLog { from { opacity: 0; transform: translateX(-6px); } }
+
+@media (max-width: 960px) {
+  .fluxo__area { grid-template-columns: 1fr; }
+  .fluxo__log { border-left: 0; border-top: 1px solid var(--linha); max-height: 200px; }
+}
+.fluxo__tela { position: relative; }
