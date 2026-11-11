@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Carlos Henrique Moreira · Engenheiro de IA</title>
+  <meta name="description" content="Carlos Henrique Moreira, engenheiro de IA. Agentes, back-end e automação para produção, com regra, custo medido e revisão humana." />
+  <meta property="og:title" content="Carlos Henrique Moreira · Engenheiro de IA" />
+  <meta property="og:description" content="Construo sistemas de IA que funcionam fora da demo." />
+  <meta property="og:type" content="website" />
+  <meta name="theme-color" content="#0E0D13" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" />
+  <script>
+    (function () {
+      var tema;
+      try { tema = localStorage.getItem('tema'); } catch (e) {}
+      if (tema !== 'light' && tema !== 'dark') tema = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      document.documentElement.dataset.theme = tema;
+    })();
+  </script>
+</head>
+<body>
+  <a class="pular" href="#conteudo" data-i18n="ui.pular">Pular para o conteúdo</a>
+
+  <div class="cursor" aria-hidden="true"><span class="cursor__ponto"></span><span class="cursor__rotulo"></span></div>
+
+  <header class="topo">
+    <div class="topo__in">
+      <a class="topo__nome" href="/" data-home>
+        <span class="topo__assin">Carlos H. Moreira</span>
+        <span class="topo__status mono"><i></i><span data-i18n="topo.papel">Engenheiro de IA</span></span>
+      </a>
+      <nav class="topo__nav" aria-label="Seções">
+        <a href="/#trabalhos" data-ancora="trabalhos"><span data-i18n="nav.trabalhos">Trabalhos</span></a>
+        <a href="/#processo" data-ancora="processo"><span data-i18n="nav.processo">Processo</span></a>
+        <a href="/#sobre" data-ancora="sobre"><span data-i18n="nav.sobre">Sobre</span></a>
+        <a href="/#contato" data-ancora="contato"><span data-i18n="nav.contato">Contato</span></a>
+      </nav>
+      <div class="topo__ctrl">
+        <button class="ctrl" id="btn-som" data-i18n-attr="aria-label:ui.som;title:ui.som" aria-pressed="false">
+          <span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>
+        </button>
+        <button class="ctrl mono" id="btn-lang" aria-label="Idioma / Language"><span data-l="pt">PT</span><span data-l="en">EN</span></button>
+        <button class="ctrl" id="btn-tema" data-i18n-attr="aria-label:ui.tema;title:ui.tema">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" /><path d="M12 4a8 8 0 0 1 0 16z" class="tema__meio" /></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="conteudo">
+    <!-- ================= HOME ================= -->
+    <div id="home">
+      <section class="hero container">
+        <div class="hero__texto">
+          <p class="rotulo mono" data-i18n="hero.rotulo"></p>
+          <h1 class="hero__titulo">
+            <span class="ln"><span data-i18n="hero.t1"></span></span>
+            <span class="ln"><em data-i18n="hero.t2"></em> <span data-i18n="hero.t3"></span></span>
+          </h1>
+          <p class="hero__sub" data-i18n="hero.sub"></p>
+          <div class="hero__ctas">
+            <a class="btn btn--cheio" href="/#trabalhos" data-ancora="trabalhos"><span data-i18n="hero.cta1"></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6" /></svg></a>
+            <a class="btn" href="/#contato" data-ancora="contato"><span data-i18n="hero.cta2"></span></a>
+          </div>
+        </div>
+        <div class="hero__robo" id="robo-area">
+          <canvas id="robo" aria-label="Robô 3D interativo"></canvas>
+          <div class="balao mono" id="balao" aria-live="polite"></div>
+        </div>
+        <dl class="hero__meta">
+          <div><dt class="mono" data-i18n="hero.m1k"></dt><dd data-i18n="hero.m1v"></dd></div>
+          <div><dt class="mono" data-i18n="hero.m2k"></dt><dd data-i18n="hero.m2v"></dd></div>
+          <div><dt class="mono" data-i18n="hero.m3k"></dt><dd data-i18n="hero.m3v"></dd></div>
+        </dl>
+      </section>
+
+      <section class="secao container" id="trabalhos">
+        <header class="secao__cab">
+          <span class="secao__n mono">(01)</span>
+          <h2 class="secao__titulo" data-split data-i18n="trab.titulo"></h2>
+          <p class="secao__sub" data-i18n="trab.sub" data-reveal></p>
+        </header>
+        <div class="grade" id="grade"></div>
+      </section>
+
+      <section class="secao container" id="processo">
+        <header class="secao__cab">
+          <span class="secao__n mono">(02)</span>
+          <h2 class="secao__titulo" data-split data-i18n="proc.titulo"></h2>
+          <p class="secao__sub" data-i18n="proc.sub" data-reveal></p>
+        </header>
+        <div class="processo">
+          <div class="processo__linha" aria-hidden="true"><span></span></div>
+          <ol class="processo__passos">
+            <li data-reveal><span class="processo__n">01</span><h3 data-i18n="proc.1t"></h3><p data-i18n="proc.1d"></p></li>
+            <li data-reveal><span class="processo__n">02</span><h3 data-i18n="proc.2t"></h3><p data-i18n="proc.2d"></p></li>
+            <li data-reveal><span class="processo__n">03</span><h3 data-i18n="proc.3t"></h3><p data-i18n="proc.3d"></p></li>
+            <li data-reveal><span class="processo__n">04</span><h3 data-i18n="proc.4t"></h3><p data-i18n="proc.4d"></p></li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="secao container sobre" id="sobre">
+        <header class="secao__cab">
+          <span class="secao__n mono">(03)</span>
+          <h2 class="secao__titulo" data-split data-i18n="sobre.titulo"></h2>
+        </header>
+        <div class="sobre__grade">
+          <figure class="sobre__foto" data-reveal>
+            <div class="sobre__moldura sem-foto" id="moldura">
+              <img id="foto" alt="Carlos Henrique Moreira" />
+              <span class="sobre__mono" aria-hidden="true">CH</span>
+            </div>
+          </figure>
+          <div class="sobre__texto">
+            <p class="sobre__lead" data-split data-i18n="sobre.lead"></p>
+            <p data-reveal data-i18n="sobre.p1"></p>
+            <p data-reveal data-i18n="sobre.p2"></p>
+            <div class="stack" id="stack"></div>
+            <p class="sobre__fora" data-reveal><span class="mono" data-i18n="sobre.fora"></span><span data-i18n="sobre.forav"></span></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="secao container contato" id="contato">
+        <header class="secao__cab">
+          <span class="secao__n mono">(04)</span>
+        </header>
+        <div class="contato__grade">
+          <div class="contato__texto">
+            <h2 class="contato__titulo"><span class="ln"><span data-i18n="contato.titulo1"></span></span><span class="ln"><em data-i18n="contato.titulo2"></em></span></h2>
+            <p class="contato__sub" data-reveal data-i18n="contato.sub"></p>
+            <button class="email" id="btn-email" data-reveal>
+              <span class="email__txt" id="email-txt"></span>
+              <span class="email__acao mono" data-i18n="contato.copiar"></span>
+            </button>
+            <div class="contato__links" data-reveal>
+              <a class="btn" id="btn-whats" target="_blank" rel="noopener" hidden>WhatsApp</a>
+              <a class="btn" id="btn-linkedin" target="_blank" rel="noopener">LinkedIn</a>
+              <a class="btn" id="btn-github" target="_blank" rel="noopener">GitHub</a>
+            </div>
+          </div>
+          <figure class="contato__globo">
+            <canvas id="globo" aria-label="Planeta 3D: arraste para girar"></canvas>
+            <span class="globo__base mono" id="globo-base"><i></i>São José dos Campos</span>
+            <figcaption class="mono"><span data-i18n="contato.globo"></span> <b data-i18n="contato.arraste"></b></figcaption>
+          </figure>
+        </div>
+      </section>
+    </div>
+
+    <!-- ================= CASE ================= -->
+    <div id="case" hidden></div>
+  </main>
+
+  <footer class="rodape container mono">
+    <span>© 2026 Carlos Henrique Moreira</span>
+    <span data-i18n="rodape.feito"></span>
+    <span class="rodape__egg" title="領域展開">r·y·o·i·k·i</span>
+    <a href="#" id="topo-link" data-i18n="rodape.topo"></a>
+  </footer>
+
+  <div class="cortina" aria-hidden="true"></div>
+
+  <div class="dominio" id="dominio" aria-hidden="true">
+    <div class="dominio__kanji">領域展開</div>
+    <p class="dominio__legenda mono" data-i18n="dominio.legenda"></p>
+    <p class="dominio__veredito" data-i18n="dominio.veredito"></p>
+  </div>
+
+  <div class="toast mono" id="toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
