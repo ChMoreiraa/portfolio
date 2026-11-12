@@ -53,6 +53,10 @@ html, body { overflow-x: clip; }
   .kb3d { display: flex; flex-direction: column; height: auto; min-height: 0; margin-top: 0; }
   .kb3d__info { order: -1; position: relative; top: 0; max-width: none; }
   .kb3d__cat { margin-top: 18px; }
+  /* Altura fixa: o texto muda a cada tecla (e o teclado "digita sozinho"); se a altura mudasse, tudo abaixo
+     andava sem o ScrollTrigger saber e o robô da Carreira se perdia */
+  .kb3d__nome { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .kb3d__uso { line-height: 1.5; min-height: 3em; }
   #kb3d-canvas { --folga: 0px; position: relative; height: auto; aspect-ratio: 1 / 0.86; max-height: 72vh; }
   .cfx__palco, .bbx__lado-fone { justify-self: center; }
 }
@@ -67,7 +71,7 @@ html, body { overflow-x: clip; }
   .cat__chips::-webkit-scrollbar { display: none; }
   .cat__chip { flex: none; }
   .kb3d__nome { font-size: 34px; }
-  .kb3d__uso { font-size: 14px; min-height: 0; }
+  .kb3d__uso { font-size: 14px; }
   /* Indicadores lado a lado e compactos (um embaixo do outro ficavam altos e vazios) */
   .numeros { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 32px; }
   .numero { padding: 16px 12px 14px; border-radius: 16px; }

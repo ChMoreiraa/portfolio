@@ -110,7 +110,13 @@ export function ligarVooCarreira({ raiz, gsap, ScrollTrigger, reduzido, t }) {
   const inicioVoo = () => `top ${Math.round((document.querySelector('.topo')?.offsetHeight || 80) + caixa.offsetHeight * 0.9)}px`;
   // No celular o dedo rola rápido: menos atraso para o robô descer junto
   const celular = innerWidth <= 860;
-  gsap.to(proxy, {
+  // Na 1ª visita (sobretudo no celular) o ScrollTrigger mede a página antes de ela ter a altura final, acha que o
+  // fim da Carreira já passou e dispara o pouso final no carregamento: o robô aparecia no último card e não
+  // acompanhava a descida. Os pousos só valem depois que a pessoa rolou de verdade e com o card na tela.
+  let rolou = scrollY > 0;
+  addEventListener('scroll', () => { rolou = true; }, { passive: true, once: true });
+  const noFim = () => { const r = ultCard.getBoundingClientRect(); return r.height > 0 && r.bottom <= innerHeight + 40; };
+  const voo = gsap.to(proxy, {
     u: 1, ease: 'none',
     scrollTrigger: {
       trigger: primCard, start: inicioVoo, endTrigger: ultCard, end: 'bottom bottom-=16', scrub: celular ? 0.4 : 1, invalidateOnRefresh: true,
@@ -141,6 +147,16 @@ export function ligarVooCarreira({ raiz, gsap, ScrollTrigger, reduzido, t }) {
   // e do layout terminarem, e o robô ficava por cima do card: por isso refaz sempre que a lista muda de tamanho
   // ou o ScrollTrigger recalcula.
   function reposicionar() {
+    // Pouso final disparado com a medida errada (a pessoa ainda não chegou ao fim): desfaz e volta ao voo
+    if (final && voo.scrollTrigger.progress < 1) {
+      final.kill();
+      final = null;
+      calar();
+      caixa.classList.remove('atras');
+      robo?.setFeliz(false);
+      robo?.setVoo(0);
+      voo.progress(voo.scrollTrigger.progress); // sem voar do último até o lugar certo
+    }
     if (final) {
       if (final.progress() < 1) return; // no meio da volta no box: ela mesma termina no lugar
       const { pousoFinal: p } = medir();
@@ -152,11 +168,18 @@ export function ligarVooCarreira({ raiz, gsap, ScrollTrigger, reduzido, t }) {
   }
   requestAnimationFrame(reposicionar);
   ScrollTrigger.addEventListener('refresh', reposicionar);
-  new ResizeObserver(() => { cache = null; reposicionar(); }).observe(lista);
+  // A lista mudou de tamanho (fontes, imagens): mede de novo e manda o ScrollTrigger recalcular o começo e o fim
+  let timerMedida;
+  new ResizeObserver(() => {
+    cache = null;
+    reposicionar();
+    clearTimeout(timerMedida);
+    timerMedida = setTimeout(() => ScrollTrigger.refresh(), 200);
+  }).observe(lista);
 
   // ---------- Pouso no último: volta no box ----------
   function pousoFinal() {
-    if (final) return;
+    if (final || !rolou || !noFim()) return;
     calar();
     const { W, H, cards, n, estreito, pousoFinal: alvo } = medir();
     const c = cards[n - 1];
@@ -216,6 +239,7 @@ export function ligarVooCarreira({ raiz, gsap, ScrollTrigger, reduzido, t }) {
 
   // ---------- Pouso no 1º (subindo) ----------
   function pousoInicial() {
+    if (!rolou) return; // recálculo no carregamento, não a pessoa subindo
     calar();
     caixa.classList.remove('atras');
     inclinar(0);
