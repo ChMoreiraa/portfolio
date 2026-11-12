@@ -108,10 +108,12 @@ export function ligarVooCarreira({ raiz, gsap, ScrollTrigger, reduzido, t }) {
   //    Subindo, é aí que ele já pousa nele e fala.
   //  - fim: o último card aparece inteiro (a base dele chega na base da tela). Descendo, é aí que ele faz a volta.
   const inicioVoo = () => `top ${Math.round((document.querySelector('.topo')?.offsetHeight || 80) + caixa.offsetHeight * 0.9)}px`;
+  // No celular o dedo rola rápido: menos atraso para o robô descer junto
+  const celular = innerWidth <= 860;
   gsap.to(proxy, {
     u: 1, ease: 'none',
     scrollTrigger: {
-      trigger: primCard, start: inicioVoo, endTrigger: ultCard, end: 'bottom bottom-=16', scrub: 1, invalidateOnRefresh: true,
+      trigger: primCard, start: inicioVoo, endTrigger: ultCard, end: 'bottom bottom-=16', scrub: celular ? 0.4 : 1, invalidateOnRefresh: true,
       onLeave: pousoFinal,       // o card "Atual" apareceu
       onEnterBack: decolar,      // voltou a subir: sai do pouso e retoma o voo
       onLeaveBack: pousoInicial, // subiu até antes do 1º marco
@@ -135,8 +137,22 @@ export function ligarVooCarreira({ raiz, gsap, ScrollTrigger, reduzido, t }) {
       if (voando) calar();
     },
   });
-  // Posição inicial (antes de qualquer scroll): pousado no 1º marco
-  requestAnimationFrame(() => { const p = medir().pontos[0]; colocar(p.x, p.y, true); });
+  // Posição inicial (antes de qualquer scroll): pousado no 1º marco. Na 1ª visita a medida sai antes das fontes
+  // e do layout terminarem, e o robô ficava por cima do card: por isso refaz sempre que a lista muda de tamanho
+  // ou o ScrollTrigger recalcula.
+  function reposicionar() {
+    if (final) {
+      if (final.progress() < 1) return; // no meio da volta no box: ela mesma termina no lugar
+      const { pousoFinal: p } = medir();
+      colocar(p.x, p.y, true);
+      return;
+    }
+    const p = naCurva(medir().pontos, proxy.u);
+    colocar(p.x, p.y, true);
+  }
+  requestAnimationFrame(reposicionar);
+  ScrollTrigger.addEventListener('refresh', reposicionar);
+  new ResizeObserver(() => { cache = null; reposicionar(); }).observe(lista);
 
   // ---------- Pouso no último: volta no box ----------
   function pousoFinal() {
@@ -214,8 +230,15 @@ export function ligarVooCarreira({ raiz, gsap, ScrollTrigger, reduzido, t }) {
     }, 950);
   }
 
-  // ---------- Cria o robô 3D só quando a Carreira está chegando ----------
-  ScrollTrigger.create({ trigger: raiz, start: 'top bottom+=400', onEnter: criar, onEnterBack: criar });
+  // ---------- Cria o robô 3D antes de a Carreira chegar ----------
+  // Montar a cena (shaders e iluminação) trava o celular por um instante; criado 400 px antes, isso caía bem na
+  // hora em que a pessoa chegava rolando e o robô ficava parado. Agora nasce num momento ocioso depois da
+  // abertura, ou bem antes da seção, o que vier primeiro. Fora da tela ele não desenha (não gasta).
+  ScrollTrigger.create({ trigger: raiz, start: 'top bottom+=1600', onEnter: criar, onEnterBack: criar });
+  const ocioso = (f) => (window.requestIdleCallback ? requestIdleCallback(f, { timeout: 3000 }) : setTimeout(f, 300));
+  const depoisDeCarregar = () => setTimeout(() => ocioso(criar), 2500); // deixa a abertura terminar antes
+  if (document.readyState === 'complete') depoisDeCarregar();
+  else addEventListener('load', depoisDeCarregar, { once: true });
 
   async function criar() {
     if (robo || caixa.dataset.criando) return;
