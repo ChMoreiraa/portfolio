@@ -13,6 +13,7 @@
 .bbx__app { flex: 1; min-height: 0; display: flex; flex-direction: column; position: relative; }
 .bbx__app.entra .bb-tela { animation: bbEntra 0.32s cubic-bezier(.2, .8, .2, 1); }
 @keyframes bbEntra { from { opacity: 0; transform: translateX(14px); } }
+.bbx__app.passo .bb-passo { animation: bbEntra 0.3s cubic-bezier(.2, .8, .2, 1); }
 .bb-tela { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
 .bbx__fone button { font-family: inherit; color: inherit; cursor: pointer; }
 .bbx__fone input { font-family: inherit; }
@@ -276,3 +277,31 @@
 .bbv__fone--esq { scale: calc(var(--k) * 0.9); translate: calc(var(--k) * -300px) calc(var(--k) * 40px); rotate: -7deg; filter: brightness(0.72); }
 .bbv__fone--dir { scale: calc(var(--k) * 0.9); translate: calc(var(--k) * 300px) calc(var(--k) * 40px); rotate: 7deg; filter: brightness(0.72); }
 .bbv .bb-scroll, .bbv .bb-inicio, .bbv .bb-login { overflow: hidden; }
+
+/* Notebook do Barbú: o app como site (Flutter Web), espelhado com o celular, e os bastidores ao lado */
+.bbw { position: absolute; inset: 0; display: grid; grid-template-columns: minmax(300px, 0.95fr) minmax(0, 1.05fr); background: #070708; }
+.bbw__app { position: relative; min-height: 0; background: radial-gradient(70% 60% at 50% 0%, rgba(211, 47, 47, 0.12), transparent 70%), #0A0A0A; border-right: 1px solid #1f1f22; }
+/* A mesma "carcaça" do celular, sem moldura: ocupa a coluna e o app fica centralizado como num site */
+.bbx__fone.bbx__fone--web {
+  position: absolute; inset: 0; width: auto; height: auto; border: 0; border-radius: 0; box-shadow: none; background: transparent;
+}
+.bbx__fone--web .bbx__app { width: min(100%, 400px); margin: 0 auto; border-left: 1px solid #1a1a1c; border-right: 1px solid #1a1a1c; background: #0A0A0A; }
+.bbx__fone--web .bbx__dialogo, .bbx__fone--web .bbx__snack { left: 50%; translate: -50% 0; width: min(100%, 400px); }
+.bbw__bast { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 16px 18px; color: #f1f1f1; font-family: 'Roboto', system-ui, sans-serif; scrollbar-width: thin; scrollbar-color: #2a2a2e transparent; }
+.bbw__t { font-weight: 700; font-size: 15px; }
+.bbw__s { color: #8d8d93; font-size: 12px; margin: 3px 0 14px; }
+.bbw .bbx__vazio { padding: 22px 10px; }
+.bbw .bbx__ev { background: #141416; border-color: #232327; }
+.bbw .bbx__json { white-space: pre-wrap; word-break: break-word; }
+
+/* O celular fica à frente do canto direito do notebook: os bastidores deixam esse espaço livre */
+@media (min-width: 861px) {
+  .dv__nb .bbw__bast { padding-right: 120px; }
+}
+@media (max-width: 860px) {
+  /* No celular, a tela do notebook ganha altura e as colunas viram uma embaixo da outra */
+  .dv__nb .nb__vp:not(.nb__vp--escala) { aspect-ratio: auto; height: 560px; }
+  .bbw { display: block; overflow-y: auto; overscroll-behavior: contain; }
+  .bbw__app { height: 560px; border-right: 0; }
+  .bbw__bast { overflow: visible; border-top: 1px solid #1f1f22; }
+}

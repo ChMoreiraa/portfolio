@@ -10,7 +10,9 @@ import { criarCarga } from './carga.js';
 import { renderTime, ligarTime } from './demos.js';
 import { renderBarbu, ligarBarbu, vitrineBarbu, ajustarVitrine } from './barbu.js';
 import './estilo-barbu.css';
+import './estilo-aparelhos.css';
 import './estilo-responsivo.css';
+import { notebook, palco, ligarAparelhos } from './aparelhos.js';
 import { areas, iconeCatalogo, corDe } from './catalogo.js';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -319,6 +321,19 @@ function ligarTeclado() {
   });
 }
 
+// Capa da demo do LibrasFlow em cada aparelho. A câmera só funciona numa tela por vez.
+function capaLibras(lado, emUsoNoOutro = false) {
+  const pt = getIdioma() === 'pt';
+  const outro = lado === 'nb' ? (pt ? 'no celular' : 'on the phone') : (pt ? 'no notebook' : 'on the laptop');
+  if (emUsoNoOutro) {
+    return `<p>${pt ? `A câmera está ligada ${outro}.` : `The camera is on ${outro}.`}</p>
+      <button class="btn" type="button" data-lb-ligar="${lado}">${pt ? 'Usar aqui' : 'Use it here'}</button>`;
+  }
+  return `<p>${t('embed.texto')}</p>
+    <button class="btn btn--cheio" type="button" data-lb-ligar="${lado}">${t('embed.botao')}</button>
+    <p class="lb__priv mono">${t('embed.privacidade')}</p>`;
+}
+
 function renderCase(p) {
   const i = projetos.indexOf(p);
   const prox = projetos[(i + 1) % projetos.length];
@@ -345,20 +360,23 @@ function renderCase(p) {
         <pre class="demo__saida mono" id="demo-saida"><span class="demo__vazio">// GET https://cepflow.onrender.com/api/cep/{cep}</span></pre>
       </form>
     </section>` : '';
+  const pt = getIdioma() === 'pt';
+  const urlCurta = (u) => u.replace('https://', '').replace(/\/$/, '');
+  // Celular genérico (mesma moldura do CEPFlow): barra com o endereço e a tela
+  const celular = (url, tela, abas = '') => `
+    <div class="cfx__fone">
+      <span class="cfx__ilha"></span>
+      <div class="cfx__barra"><div class="cfx__url mono"><b>🔒</b><span data-cel-url>${url}</span></div>${abas}</div>
+      <div class="cfx__tela">${tela}</div>
+    </div>`;
   const embed = p.embed ? `
     <section class="case__bloco case__bloco--largo" id="testar">
       <h2 class="case__rot mono">${t('embed.titulo')}</h2>
-      <div class="embed" data-reveal>
-        <div class="embed__barra mono"><i></i><i></i><i></i><span>${p.embed.replace('https://', '').replace(/\/$/, '')}</span>
-          <a href="${p.embed}" target="_blank" rel="noopener">${t('embed.aba')} ↗</a></div>
-        <div class="embed__tela" id="embed-tela">
-          <div class="embed__capa">
-            <p>${t('embed.texto')}</p>
-            <button class="btn btn--cheio" type="button" id="embed-carregar">${t('embed.botao')}</button>
-            <p class="embed__priv mono">${t('embed.privacidade')}</p>
-          </div>
-        </div>
-      </div>
+      <div data-reveal>${palco({
+        idioma: getIdioma(),
+        nb: notebook({ url: urlCurta(p.embed), link: p.embed, linkRotulo: t('embed.aba'), conteudo: `<div class="lb" data-lb="nb">${capaLibras('nb')}</div>` }),
+        cel: celular(urlCurta(p.embed), `<div class="lb lb--cel" data-lb="cel">${capaLibras('cel')}</div>`),
+      })}</div>
     </section>` : '';
   const sim = p.simulacao ? `
     <section class="case__bloco case__bloco--largo" id="testar">
@@ -373,26 +391,20 @@ function renderCase(p) {
   const cep = p.front ? `
     <section class="case__bloco case__bloco--largo" id="testar">
       <h2 class="case__rot mono">${t('embed.titulo')}</h2>
-      <div class="cfx" data-reveal>
-        <div class="cfx__palco">
-          <div class="cfx__fone">
-            <span class="cfx__ilha"></span>
-            <div class="cfx__barra">
-              <div class="cfx__url mono"><b>🔒</b><span data-cf-url>cepflow.netlify.app</span></div>
-              <div class="cfx__abas" role="tablist">
-                <button type="button" class="on" data-cf="app">App</button>
-                <button type="button" data-cf="swagger">Swagger</button>
-              </div>
-            </div>
-            <div class="cfx__tela"><iframe data-cf-frame src="${p.front}" title="CEPFlow" loading="lazy"></iframe></div>
-          </div>
-        </div>
-        <div class="cfx__lado">
-          <div class="bbx__ev"><p class="bbx__ev-t mono">${getIdioma() === 'pt' ? 'Front-end real · Netlify' : 'Real front-end · Netlify'}</p><p>${getIdioma() === 'pt' ? 'Este é o front do projeto, em HTML, CSS e JS puro, chamando a API de verdade. Digite um CEP no celular.' : 'This is the project front-end, plain HTML, CSS and JS, calling the real API. Type a postal code on the phone.'}</p></div>
-          <div class="bbx__ev"><p class="bbx__ev-t mono">${getIdioma() === 'pt' ? 'API · FastAPI no Render' : 'API · FastAPI on Render'}</p><p>${getIdioma() === 'pt' ? 'Toque em Swagger no topo do celular para ver e testar os endpoints direto na documentação gerada pelo FastAPI.' : 'Tap Swagger at the top of the phone to see and try the endpoints in the docs generated by FastAPI.'}</p></div>
-          <div class="bbx__ev"><p class="bbx__ev-t mono">${getIdioma() === 'pt' ? 'Primeira consulta lenta?' : 'Slow first lookup?'}</p><p>${t('demo.acordando')}</p></div>
-          <p class="cfx__links"><a class="btn" href="${p.front}" target="_blank" rel="noopener">App ↗</a> <a class="btn" href="${p.swagger}" target="_blank" rel="noopener">Swagger ↗</a></p>
-        </div>
+      <div data-reveal>${palco({
+        idioma: getIdioma(),
+        nb: notebook({
+          abas: [{ id: 'app', rotulo: 'App', url: urlCurta(p.front) }, { id: 'swagger', rotulo: 'Swagger', url: urlCurta(p.swagger) }],
+          conteudo: `<iframe data-nb-frame src="${p.front}" title="CEPFlow" loading="lazy"></iframe>`,
+        }),
+        cel: celular(urlCurta(p.front), `<iframe data-cel-frame src="${p.front}" title="CEPFlow no celular" loading="lazy"></iframe>`,
+          `<div class="cfx__abas" role="tablist"><button type="button" class="on" data-cel-aba="app">App</button><button type="button" data-cel-aba="swagger">Swagger</button></div>`),
+      })}</div>
+      <div class="dv-info" data-reveal>
+        <div class="bbx__ev"><p class="bbx__ev-t mono">${pt ? 'Front-end real · Netlify' : 'Real front-end · Netlify'}</p><p>${pt ? 'O front do projeto, em HTML, CSS e JS puro, chamando a API de verdade. Digite um CEP no notebook ou no celular.' : 'The project front-end, plain HTML, CSS and JS, calling the real API. Type a postal code on the laptop or the phone.'}</p></div>
+        <div class="bbx__ev"><p class="bbx__ev-t mono">${pt ? 'API · FastAPI no Render' : 'API · FastAPI on Render'}</p><p>${pt ? 'Abra a aba Swagger no notebook ou no celular para ver e testar os endpoints na documentação gerada pelo FastAPI.' : 'Open the Swagger tab on the laptop or the phone to see and try the endpoints in the docs generated by FastAPI.'}</p></div>
+        <div class="bbx__ev"><p class="bbx__ev-t mono">${pt ? 'Primeira consulta lenta?' : 'Slow first lookup?'}</p><p>${t('demo.acordando')}</p></div>
+        <p class="dv-info__links"><a class="btn" href="${p.front}" target="_blank" rel="noopener">App ↗</a> <a class="btn" href="${p.swagger}" target="_blank" rel="noopener">Swagger ↗</a></p>
       </div>
     </section>` : '';
   const testar = p.embed || p.demo || p.simulacao || p.timeDemo || p.front
@@ -492,13 +504,24 @@ function ligarExtrasDoCase(p) {
   if (p.demo) ligarDemo();
   if (p.simulacao) ligarBarbu($('#testar'), getIdioma(), clique);
   if (p.capaTelas) ajustarVitrine($('#case-hero'));
+  if (p.front || p.embed || p.simulacao) ligarAparelhos($('#testar'), () => { lenis?.resize(); ScrollTrigger.refresh(); });
   if (p.front) {
-    const frame = $('[data-cf-frame]'), url = $('[data-cf-url]');
-    $$('[data-cf]').forEach((b) => b.addEventListener('click', () => {
-      const sw = b.dataset.cf === 'swagger';
-      $$('[data-cf]').forEach((x) => x.classList.toggle('on', x === b));
+    // Abas de navegador do notebook: App | Swagger
+    const frame = $('[data-nb-frame]'), url = $('#testar [data-nb-url]');
+    $$('[data-nb-aba]').forEach((b) => b.addEventListener('click', () => {
+      const sw = b.dataset.nbAba === 'swagger';
+      $$('[data-nb-aba]').forEach((x) => { x.classList.toggle('on', x === b); x.setAttribute('aria-selected', String(x === b)); });
       frame.src = sw ? p.swagger : p.front;
-      url.textContent = sw ? 'cepflow.onrender.com/docs' : 'cepflow.netlify.app';
+      url.textContent = (sw ? p.swagger : p.front).replace('https://', '').replace(/\/$/, '');
+      clique(900, 0.05, 0.03);
+    }));
+    // Abas do celular: App | Swagger, independentes das do notebook
+    const frameCel = $('[data-cel-frame]'), urlCel = $('#testar [data-cel-url]');
+    $$('[data-cel-aba]').forEach((b) => b.addEventListener('click', () => {
+      const sw = b.dataset.celAba === 'swagger';
+      $$('[data-cel-aba]').forEach((x) => x.classList.toggle('on', x === b));
+      frameCel.src = sw ? p.swagger : p.front;
+      urlCel.textContent = (sw ? p.swagger : p.front).replace('https://', '').replace(/\/$/, '');
       clique(900, 0.05, 0.03);
     }));
   }
@@ -508,12 +531,24 @@ function ligarExtrasDoCase(p) {
     const y = $('#testar').getBoundingClientRect().top + scrollY - 90;
     if (lenis) lenis.scrollTo(y, { duration: 1.2 }); else scrollTo(0, y);
   });
-  $('#embed-carregar')?.addEventListener('click', () => {
-    const tela = $('#embed-tela');
-    tela.innerHTML = `<iframe src="${p.embed}" title="${nomeDe(p)}" allow="camera; fullscreen" loading="lazy"></iframe>`;
-    tela.classList.add('carregada');
-    clique(700, 0.1, 0.04);
-  });
+  if (p.embed) {
+    // LibrasFlow: liga a demo num aparelho e desliga a do outro (a câmera é uma só)
+    const caixa = (lado) => $(`#testar [data-lb="${lado}"]`);
+    const telaCel = $('#testar .dv__cel .cfx__tela');
+    function ligar(lado) {
+      const outro = lado === 'nb' ? 'cel' : 'nb';
+      const iframe = `<iframe src="${p.embed}" title="${nomeDe(p)}" allow="camera; fullscreen"></iframe>`;
+      if (lado === 'nb') caixa('nb').outerHTML = iframe.replace('<iframe', '<iframe data-lb="nb"');
+      else telaCel.innerHTML = iframe.replace('<iframe', '<iframe data-lb="cel"');
+      if (outro === 'nb') caixa('nb').outerHTML = `<div class="lb lb--uso" data-lb="nb">${capaLibras('nb', true)}</div>`;
+      else telaCel.innerHTML = `<div class="lb lb--cel lb--uso" data-lb="cel">${capaLibras('cel', true)}</div>`;
+      clique(700, 0.1, 0.04);
+    }
+    $('#testar').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-lb-ligar]');
+      if (b) ligar(b.dataset.lbLigar);
+    });
+  }
 }
 
 function irPara(y, imediato) {

@@ -1,0 +1,134 @@
+/* Notebook + celular nos cases que dá para testar (ver src/aparelhos.js) */
+
+/* ---------- Palco: notebook grande, celular à frente no canto direito ---------- */
+.dv { position: relative; }
+.dv__abas { display: none; }
+.dv__palco { position: relative; padding: 0 200px 0 0; }
+.dv__nb { position: relative; z-index: 1; }
+.dv__cel { position: absolute; right: 0; bottom: -6px; z-index: 2; transform: scale(0.8); transform-origin: bottom right; }
+.dv__cel::after {
+  content: ''; position: absolute; left: 8%; right: 8%; bottom: -26px; height: 40px; border-radius: 50%; z-index: -1;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.55), transparent);
+}
+
+/* ---------- Notebook ---------- */
+.nb { position: relative; width: 100%; perspective: 1800px; perspective-origin: 50% 100%; }
+/* Sombra no "chão", embaixo da base */
+.nb::after {
+  content: ''; position: absolute; left: 2%; right: 2%; bottom: -34px; height: 50px; border-radius: 50%; z-index: -1;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.6), transparent); transition: opacity 0.8s;
+}
+.nb__tampa {
+  position: relative; padding: 16px 16px 20px; border-radius: 22px 22px 8px 8px; transform-origin: 50% 100%;
+  background: linear-gradient(180deg, #232228, #111014);
+  /* borda fina de alumínio por fora, moldura preta por dentro */
+  box-shadow: 0 0 0 1.5px #77767f, 0 0 0 3px #2b2a30, inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 30px 60px -30px rgba(0, 0, 0, 0.7);
+}
+.nb__cam { position: absolute; top: 6px; left: 50%; width: 6px; height: 6px; border-radius: 50%; translate: -50% 0; background: #08080a; box-shadow: 0 0 0 1.5px #34333a; }
+.nb__tela { position: relative; border-radius: 8px; overflow: hidden; background: #0d0d10; display: flex; flex-direction: column; }
+/* Reflexo diagonal do vidro e a "luz" da tela (apagada antes de abrir) */
+.nb__tela::after {
+  content: ''; position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 28%, transparent 42%);
+}
+.nb__tela::before {
+  content: ''; position: absolute; inset: 0; z-index: 4; pointer-events: none; background: #050507; opacity: 0;
+  transition: opacity 0.7s ease 0.55s;
+}
+.nb__nav {
+  flex: none; height: 42px; display: flex; align-items: center; gap: 10px; padding: 0 12px;
+  background: #1d1c22; color: #c9c7d3; border-bottom: 1px solid #2c2b33;
+}
+.nb__bolas { display: flex; gap: 6px; flex: none; }
+.nb__bolas i { width: 10px; height: 10px; border-radius: 50%; background: #ff5f57; }
+.nb__bolas i:nth-child(2) { background: #febc2e; }
+.nb__bolas i:nth-child(3) { background: #28c840; }
+.nb__abas { display: flex; gap: 4px; flex: none; }
+.nb__aba {
+  height: 28px; padding: 0 14px; border-radius: 8px; border: 1px solid transparent; background: none; color: #9a98a6;
+  font: 500 12.5px var(--sans); transition: background-color 0.2s, color 0.2s;
+}
+.nb__aba:hover { color: #fff; }
+.nb__aba.on { background: #2e2d35; border-color: #3a3942; color: #fff; }
+.nb__url {
+  flex: 1; min-width: 0; height: 28px; display: flex; align-items: center; gap: 7px; padding: 0 12px; border-radius: 8px;
+  background: #28272e; font-size: 12px; color: #b6b4c0; overflow: hidden; white-space: nowrap;
+}
+.nb__url svg { flex: none; width: 13px; height: 13px; fill: none; stroke: #5EE0A8; stroke-width: 2; }
+.nb__url span { overflow: hidden; text-overflow: ellipsis; }
+.nb__ext { flex: none; font-size: 11.5px; color: #C4B5FD; }
+.nb__ext:hover { color: #fff; }
+.nb__vp { position: relative; aspect-ratio: 1100 / 690; overflow: hidden; }
+.nb__vp--escala .nb__cont { position: absolute; left: 0; top: 0; transform: scale(var(--k, 0.8)); transform-origin: 0 0; }
+.nb__cont iframe { width: 100%; height: 100%; border: 0; display: block; background: #fff; }
+/* Dobradiça escura e a base de alumínio vista de frente, com o lábio iluminado */
+.nb__tampa::after { content: ''; position: absolute; left: 4%; right: 4%; bottom: -5px; height: 5px; border-radius: 0 0 4px 4px; background: linear-gradient(#0c0c0e, #26252b); }
+.nb__base {
+  position: relative; height: 18px; margin: 0 -6%; border-radius: 3px 3px 22px 22px;
+  background: linear-gradient(180deg, #ecebf0 0%, #c3c2ca 22%, #9c9ba4 68%, #6f6e77 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), inset 0 -2px 3px rgba(0, 0, 0, 0.25), 0 3px 0 #4e4d55;
+}
+.nb__base i {
+  position: absolute; left: 50%; top: 0; width: 15%; height: 7px; translate: -50% 0; border-radius: 0 0 10px 10px;
+  background: linear-gradient(#9d9ca5, #b9b8c0); box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+/* ---------- Animação: a tampa abre, a tela acende, o celular sobe ----------
+   Só vale com a classe .dv--anima (posta pelo script): sem script o notebook fica aberto. */
+.dv--anima .nb__tampa { transition: transform 1.15s cubic-bezier(0.22, 0.9, 0.24, 1); }
+.dv--anima .dv__cel { transition: translate 0.9s cubic-bezier(0.22, 0.9, 0.24, 1) 0.75s, opacity 0.6s ease 0.75s; }
+.dv--anima:not(.dv--aberto) .nb__tampa { transform: rotateX(-84deg); }
+.dv--anima:not(.dv--aberto) .nb__tela::before { opacity: 1; transition-delay: 0s; }
+.dv--anima:not(.dv--aberto) .nb::after { opacity: 0.5; }
+.dv--anima:not(.dv--aberto) .dv__cel { translate: 0 60px; opacity: 0; transition-delay: 0s; }
+
+/* O celular cobre o canto direito do notebook: a barra do navegador termina antes dele */
+@media (min-width: 861px) {
+  .dv__nb .nb__nav { padding-right: 110px; }
+}
+
+/* ---------- Textos de apoio embaixo dos aparelhos ---------- */
+.dv-info { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 56px; }
+.dv-info .bbx__ev p { color: var(--suave); font-size: 14px; }
+.dv-info__links { grid-column: 1 / -1; display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* ---------- LibrasFlow: capa com o botão de câmera em cada aparelho ---------- */
+.lb {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px;
+  padding: 40px; text-align: center; color: #ECEAF2;
+  background: radial-gradient(80% 80% at 50% 30%, rgba(167, 139, 250, 0.18), transparent 70%), #0a0b0f;
+}
+.lb > p:first-child { font-family: var(--serif); font-size: 34px; line-height: 1.22; max-width: 26ch; }
+.lb__priv { font-size: 14px; color: #9792A6; }
+.lb .btn { font-size: 17px; height: 54px; padding: 0 30px; }
+.lb--uso > p:first-child { font-size: 28px; color: #c9c5d6; }
+.lb--cel { padding: 22px; gap: 16px; }
+.lb--cel > p:first-child { font-size: 21px; }
+.lb--cel .lb__priv { font-size: 11.5px; }
+.lb--cel .btn { font-size: 14px; height: 44px; padding: 0 20px; }
+.lb--cel.lb--uso > p:first-child { font-size: 18px; }
+
+/* ---------- Telas menores ---------- */
+@media (max-width: 1180px) {
+  .dv__palco { padding-right: 150px; }
+  .dv__cel { transform: scale(0.66); }
+  .dv-info { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 860px) {
+  .dv__abas { display: flex; justify-content: center; gap: 6px; margin-bottom: 20px; }
+  .dv__abas button {
+    height: 38px; padding: 0 18px; border-radius: 999px; border: 1px solid var(--linha-2); background: none;
+    color: var(--suave); font: 500 13px var(--sans); transition: background-color 0.25s, color 0.25s, border-color 0.25s;
+  }
+  .dv__abas button[aria-selected='true'] { background: var(--texto); color: var(--bg); border-color: var(--texto); }
+  .dv__palco { padding: 0; }
+  .dv__cel { position: static; transform: none; display: flex; justify-content: center; }
+  .dv__cel::after { display: none; }
+  .dv[data-vista='cel'] .dv__nb { display: none; }
+  .dv[data-vista='nb'] .dv__cel { display: none; }
+  .nb__tampa { padding: 10px 10px 12px; border-radius: 16px 16px 6px 6px; }
+  .nb__nav { height: 36px; gap: 8px; padding: 0 8px; }
+  .nb__bolas, .nb__ext { display: none; }
+  .nb__aba { height: 26px; padding: 0 10px; font-size: 12px; }
+  .dv-info { grid-template-columns: 1fr; margin-top: 32px; }
+}

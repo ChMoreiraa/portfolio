@@ -36,6 +36,7 @@ import icNotifR from '@material-design-icons/svg/round/notifications_none.svg?ra
 import icCalR from '@material-design-icons/svg/round/calendar_today.svg?raw';
 import icHoraR from '@material-design-icons/svg/round/access_time.svg?raw';
 import icCutR from '@material-design-icons/svg/round/content_cut.svg?raw';
+import { notebook, palco } from './aparelhos.js';
 
 const ic = (svg, cls = '') => svg.replace('<svg', `<svg class="mi ${cls}" aria-hidden="true"`);
 
@@ -78,8 +79,8 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 
 const T = {
   aviso: {
-    pt: 'O app de agendamento em Flutter + Firebase, recriado para o navegador a partir do código do repositório. Entre, marque um horário e veja ao lado o que o app grava no Firestore, o lembrete que agenda e o webhook que manda para o n8n.',
-    en: 'The Flutter + Firebase booking app, rebuilt for the browser from the repository code. Sign in, book a slot and see on the side what the app writes to Firestore, the reminder it schedules and the webhook it sends to n8n.',
+    pt: 'Use no celular ou no notebook: os dois estão sincronizados. Ao marcar um horário, veja ao lado o que o app grava no Firestore, o lembrete e o webhook que manda para o n8n.',
+    en: 'Use it on the phone or the laptop: both are in sync. When you book a slot, see on the side what the app writes to Firestore, the reminder and the webhook it sends to n8n.',
   },
   bastidores: { pt: 'Nos bastidores', en: 'Behind the scenes' },
   bastSub: { pt: 'O que o app faz quando você confirma ou cancela um horário.', en: 'What the app does when you confirm or cancel a slot.' },
@@ -319,24 +320,29 @@ export function ajustarVitrine(raiz) {
 
 export function renderBarbu(idioma) {
   const l = (o) => o[idioma] ?? o.pt;
-  return `
-    <p class="time__aviso mono">${l(T.aviso)}</p>
-    <div class="bbx">
-      <div class="bbx__lado-fone">
-        <div class="bbx__fone" data-lenis-prevent>
-          <div class="bbx__status"><span data-relogio></span><span class="bbx__ilha"></span><span class="bbx__icones">▲ ◼</span></div>
-          <div class="bbx__notif" data-notif></div>
-          <div class="bbx__app" data-app></div>
-          <div class="bbx__dialogo" data-dialogo></div>
-          <div class="bbx__snack" data-snack></div>
-        </div>
-      </div>
-      <aside class="bbx__bast">
-        <p class="bbx__bast-t">${l(T.bastidores)}</p>
-        <p class="bbx__bast-s">${l(T.bastSub)}</p>
+  // O mesmo app nos dois aparelhos; no notebook ele aparece como site (Flutter Web), sem barra de status
+  const app = (aparelho) => `
+      <div class="bbx__notif" data-notif></div>
+      <div class="bbx__app" data-app></div>
+      <div class="bbx__dialogo" data-dialogo></div>
+      <div class="bbx__snack" data-snack></div>`;
+  const web = `
+    <div class="bbw">
+      <div class="bbw__app"><div class="bbx__fone bbx__fone--web" data-aparelho="nb" data-lenis-prevent>${app('nb')}</div></div>
+      <aside class="bbw__bast" data-lenis-prevent>
+        <p class="bbw__t">${l(T.bastidores)}</p>
+        <p class="bbw__s">${l(T.bastSub)}</p>
         <div class="bbx__eventos" data-eventos><p class="bbx__vazio">${l(T.bastVazio)}</p></div>
       </aside>
-    </div>
+    </div>`;
+  const cel = `
+    <div class="bbx__fone" data-aparelho="cel" data-lenis-prevent>
+      <div class="bbx__status"><span data-relogio></span><span class="bbx__ilha"></span><span class="bbx__icones">▲ ◼</span></div>
+      ${app('cel')}
+    </div>`;
+  return `
+    <p class="time__aviso mono">${l(T.aviso)}</p>
+    ${palco({ idioma, nb: notebook({ url: 'barbu.app', escala: false, conteudo: web }), cel })}
     <details class="bbx__igual">
       <summary>${l(T.igualT)}</summary>
       <p>${l(T.igual)}</p>
@@ -346,10 +352,11 @@ export function renderBarbu(idioma) {
 
 export function ligarBarbu(raiz, idioma, som) {
   const l = (o) => o[idioma] ?? o.pt;
-  const app = raiz.querySelector('[data-app]');
-  const dialogo = raiz.querySelector('[data-dialogo]');
-  const snack = raiz.querySelector('[data-snack]');
-  const notif = raiz.querySelector('[data-notif]');
+  // Notebook e celular espelhados: cada um tem app, diálogo, aviso e notificação próprios
+  const aparelhos = [...raiz.querySelectorAll('.bbx__fone[data-aparelho]')].map((f) => ({
+    tipo: f.dataset.aparelho, app: f.querySelector('[data-app]'), dialogo: f.querySelector('[data-dialogo]'),
+    snack: f.querySelector('[data-snack]'), notif: f.querySelector('[data-notif]'),
+  }));
   const eventos = raiz.querySelector('[data-eventos]');
   const bip = (f = 900) => som?.(f, 0.05, 0.025);
 
@@ -366,14 +373,16 @@ export function ligarBarbu(raiz, idioma, som) {
   const timer = setInterval(() => { if (!document.body.contains(raiz)) return clearInterval(timer); tick(); }, 15000);
 
   function mostrarSnack(txt, cor = '#323232') {
-    snack.textContent = txt;
-    snack.style.background = cor;
-    snack.classList.add('on');
-    clearTimeout(snack._t);
-    snack._t = setTimeout(() => snack.classList.remove('on'), 2600);
+    for (const { snack } of aparelhos) {
+      snack.textContent = txt;
+      snack.style.background = cor;
+      snack.classList.add('on');
+      clearTimeout(snack._t);
+      snack._t = setTimeout(() => snack.classList.remove('on'), 2600);
+    }
   }
-  function abrirDialogo(html) { dialogo.innerHTML = `<div class="bbx__dlg">${html}</div>`; dialogo.classList.add('on'); }
-  function fecharDialogo() { dialogo.classList.remove('on'); }
+  function abrirDialogo(html) { for (const { dialogo } of aparelhos) { dialogo.innerHTML = `<div class="bbx__dlg">${html}</div>`; dialogo.classList.add('on'); } }
+  function fecharDialogo() { for (const { dialogo } of aparelhos) dialogo.classList.remove('on'); }
 
   // ---------- Bastidores ----------
   function evento(titulo, corpo, extra = '') {
@@ -393,17 +402,37 @@ export function ligarBarbu(raiz, idioma, som) {
   const telas = fazerTelas(st);
   const barra = () => barraNav(st.aba);
 
+  // Áreas que rolam dentro de uma tela: ao redesenhar a MESMA tela, a rolagem continua onde estava
+  const ROLAVEIS = ['.bb-scroll', '.bb-login', '.bb-inicio', '.bb-dias'];
+  let navegando = false, ultimoPasso = -1;
   function render() {
+    // Trocar de etapa na reserva desliza só o conteúdo da etapa, uma vez (não a tela inteira)
+    const mudouPasso = st.tela === 'reserva' && st.passo !== ultimoPasso;
+    ultimoPasso = st.tela === 'reserva' ? st.passo : -1;
     const principal = st.tela === 'principal';
     const html = principal ? `<div class="bb-tela">${telas[ABAS[st.aba]]()}</div>${barra()}` : `<div class="bb-tela">${telas[st.tela]()}</div>`;
-    app.innerHTML = html;
+    for (const { app } of aparelhos) {
+      // Escolher algo na mesma tela não é trocar de página: sem a animação de entrada (era ela que piscava)
+      if (!navegando) app.classList.remove('entra');
+      app.classList.toggle('passo', mudouPasso && !navegando);
+      const rolagem = navegando ? null : ROLAVEIS.map((sel) => { const el = app.querySelector(sel); return el && [el.scrollTop, el.scrollLeft]; });
+      app.innerHTML = html;
+      rolagem?.forEach((r, i) => {
+        const el = r && app.querySelector(ROLAVEIS[i]);
+        if (el) { el.scrollTop = r[0]; el.scrollLeft = r[1]; }
+      });
+    }
   }
   function ir(tela) {
     st.tela = tela;
-    app.classList.remove('entra');
-    void app.offsetWidth;
-    app.classList.add('entra');
+    for (const { app } of aparelhos) {
+      app.classList.remove('entra');
+      void app.offsetWidth;
+      app.classList.add('entra');
+    }
+    navegando = true;
     render();
+    navegando = false;
   }
 
   async function carregarHorarios() {
@@ -459,6 +488,8 @@ export function ligarBarbu(raiz, idioma, som) {
   }
 
   function previaLembrete(servico, barbeiro, hora) {
+    const notif = aparelhos.find((a) => a.tipo === 'cel')?.notif;
+    if (!notif) return;
     notif.innerHTML = `<span class="bbx__notif-app">${ic(icCut, 'vermelho')} Barbú · agora</span><b>Lembrete de agendamento ✂️</b><span>${esc(servico)} com ${esc(barbeiro)} às ${hora}. Faltam 60 minutos.</span>`;
     notif.classList.add('on');
     bip(1600);
@@ -479,7 +510,7 @@ export function ligarBarbu(raiz, idioma, som) {
   // ---------- Cliques ----------
   raiz.addEventListener('click', (e) => {
     const b = e.target.closest('button');
-    if (!b || b.disabled || !raiz.contains(b) || b.closest('.bbx__bast')) return;
+    if (!b || b.disabled || !raiz.contains(b) || b.closest('.bbx__bast, .bbw__bast, .dv__abas')) return;
     bip(1000 + Math.random() * 200);
     const d = b.dataset;
     if (d.ir) {
@@ -529,7 +560,15 @@ export function ligarBarbu(raiz, idioma, som) {
         return confirmar();
     }
   });
-  dialogo.addEventListener('click', (e) => { if (e.target === dialogo) fecharDialogo(); });
+  for (const { dialogo } of aparelhos) dialogo.addEventListener('click', (e) => { if (e.target === dialogo) fecharDialogo(); });
+
+  // O que se digita num aparelho aparece no outro (os campos são os mesmos nas duas telas)
+  raiz.addEventListener('input', (e) => {
+    const campo = e.target.closest('[data-email], [data-senha], [data-nome-cad]');
+    if (!campo) return;
+    const chave = ['data-email', 'data-senha', 'data-nome-cad'].find((a) => campo.hasAttribute(a));
+    raiz.querySelectorAll(`[${chave}]`).forEach((c) => { if (c !== campo) c.value = campo.value; });
+  });
 
   // Splash de 3 s como no app (aqui 1,6 s), depois o login
   render();
