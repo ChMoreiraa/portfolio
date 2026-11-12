@@ -17,7 +17,10 @@ void main(){
   vec3 cor = uA * blob(uv, c1, .55) + uB * blob(uv, c2, .5) + uC * blob(uv, c3, .42) * .8;
   float i = clamp(max(max(cor.r, cor.g), cor.b), 0., 1.);
   cor += (hash(gl_FragCoord.xy + uT) - .5) * .035;
-  gl_FragColor = vec4(cor, i * uForca);
+  // Cor já multiplicada pela transparência: o Safari do iPhone trata o canvas sempre assim, e com a cor "crua"
+  // as manchas saíam várias vezes mais claras (o fundo virava um véu cinza e o texto ficava ilegível)
+  float alfa = i * uForca;
+  gl_FragColor = vec4(max(cor, 0.) * alfa, alfa);
 }`;
 
 const PALETAS = {
@@ -46,7 +49,7 @@ export function criarFundo({ reduzido }) {
   canvas.className = 'fundo';
   canvas.setAttribute('aria-hidden', 'true');
   document.body.prepend(canvas);
-  const gl = canvas.getContext('webgl', { premultipliedAlpha: false, antialias: false, alpha: true });
+  const gl = canvas.getContext('webgl', { premultipliedAlpha: true, antialias: false, alpha: true });
   if (!gl) { canvas.remove(); return null; }
 
   const prog = gl.createProgram();
@@ -65,7 +68,7 @@ export function criarFundo({ reduzido }) {
   gl.enableVertexAttribArray(loc);
   gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
   gl.enable(gl.BLEND);
-  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
   const u = (n) => gl.getUniformLocation(prog, n);
   const uRes = u('uRes'), uT = u('uT'), uA = u('uA'), uB = u('uB'), uC = u('uC'), uForca = u('uForca');
 
@@ -105,7 +108,9 @@ export function criarFundo({ reduzido }) {
     gl.uniform3fv(uA, atual[0]);
     gl.uniform3fv(uB, atual[1]);
     gl.uniform3fv(uC, atual[2]);
-    gl.uniform1f(uForca, forca * (tema === 'dark' ? 0.55 : 0.7));
+    // No celular o texto fica sempre por cima da aurora (sem margens livres): um pouco mais fraca para ler bem
+    const celular = innerWidth <= 860 ? 0.8 : 1;
+    gl.uniform1f(uForca, forca * (tema === 'dark' ? 0.55 : 0.7) * celular);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
   requestAnimationFrame(quadro);
