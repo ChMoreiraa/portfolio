@@ -21,7 +21,8 @@ function texturaRadial(interno = 'rgba(255,255,255,1)', externo = 'rgba(255,255,
   return tex;
 }
 
-export function criarRobo({ canvas, reduzido, aoPassar, aoClicar }) {
+// `seguirMouse: false` (robô da Carreira): quem decide para onde ele olha é quem o controla (`api.olhar`).
+export function criarRobo({ canvas, reduzido, aoPassar, aoClicar, seguirMouse = true }) {
   let renderer;
   try {
     renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -61,8 +62,10 @@ export function criarRobo({ canvas, reduzido, aoPassar, aoClicar }) {
 
   const robo = new THREE.Group();
   cena.add(robo);
+  const acro = new THREE.Group(); // cambalhota e pirueta
+  robo.add(acro);
   const flutua = new THREE.Group();
-  robo.add(flutua);
+  acro.add(flutua);
 
   // Corpo: perfil torneado (um "feijão" liso)
   const perfil = new THREE.SplineCurve([
@@ -227,8 +230,10 @@ export function criarRobo({ canvas, reduzido, aoPassar, aoClicar }) {
   function onMove(e) {
     const r = canvas.getBoundingClientRect();
     const cx = r.left + r.width / 2, cy = r.top + r.height * 0.35;
-    alvo.x = THREE.MathUtils.clamp((e.clientX - cx) / (innerWidth * 0.5), -1, 1);
-    alvo.y = THREE.MathUtils.clamp((e.clientY - cy) / (innerHeight * 0.5), -1, 1);
+    if (seguirMouse) {
+      alvo.x = THREE.MathUtils.clamp((e.clientX - cx) / (innerWidth * 0.5), -1, 1);
+      alvo.y = THREE.MathUtils.clamp((e.clientY - cy) / (innerHeight * 0.5), -1, 1);
+    }
     ponteiro.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
     dentro = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
   }
@@ -284,6 +289,35 @@ export function criarRobo({ canvas, reduzido, aoPassar, aoClicar }) {
     corLuzes.forEach((c) => gsap.to(c, { r: on ? COR_OURO.r : COR_OLHO.r, g: on ? COR_OURO.g : COR_OLHO.g, b: on ? COR_OURO.b : COR_OLHO.b, duration: 0.8 }));
     gsap.to(recorte.color, { r: on ? 0.95 : 0.65, g: on ? 0.6 : 0.55, b: on ? 0.2 : 0.98, duration: 0.8 });
     setFeliz(false);
+  }
+
+  // ---------- Voo (robô da Carreira) ----------
+  const voo = { alvo: 0, atual: 0 };
+  // Mortal para a frente (gira no eixo X) e pirueta (gira no próprio eixo, Y): acrobacias diferentes
+  function cambalhota(tipo = 'mortal') {
+    if (reduzido) return gsap.timeline();
+    gsap.killTweensOf(acro.rotation);
+    gsap.killTweensOf(acro.position);
+    acro.rotation.set(0, 0, 0);
+    const tl = gsap.timeline();
+    if (tipo === 'pirueta') {
+      tl.to(acro.position, { y: 0.35, duration: 0.35, ease: 'power2.out' }, 0)
+        .to(acro.rotation, { y: Math.PI * 2, duration: 0.85, ease: 'power3.inOut' }, 0.05)
+        .to(acro.position, { y: 0, duration: 0.45, ease: 'bounce.out' }, 0.7)
+        .set(acro.rotation, { y: 0 });
+    } else {
+      tl.to(acro.position, { y: 0.5, duration: 0.35, ease: 'power2.out' }, 0)
+        .to(acro.rotation, { x: -Math.PI * 2, duration: 0.7, ease: 'power2.inOut' }, 0.1)
+        .to(acro.position, { y: 0, duration: 0.5, ease: 'bounce.out' }, 0.6)
+        .set(acro.rotation, { x: 0 });
+    }
+    return tl;
+  }
+  function inclinarCabeca() {
+    gsap.killTweensOf(cabeca.rotation);
+    return gsap.timeline()
+      .to(cabeca.rotation, { z: 0.28, duration: 0.45, ease: 'back.out(2)' })
+      .to(cabeca.rotation, { z: 0, duration: 0.6, ease: 'power2.inOut' }, '+=1.4');
   }
 
   // Montagem de entrada
@@ -344,7 +378,10 @@ export function criarRobo({ canvas, reduzido, aoPassar, aoClicar }) {
 
     const altura = flutua.position.y;
     sombra.scale.setScalar(1 - altura * 1.2);
-    anelBase.material.opacity = 0.45 + Math.sin(t * 2) * 0.12;
+    voo.atual += (voo.alvo - voo.atual) * Math.min(1, dt * 3);
+    anelBase.material.opacity = 0.45 + Math.sin(t * 2) * 0.12 + voo.atual * 0.45;
+    // Só mexe no tamanho com o propulsor ligado (no robô do topo o anel cresce na animação de entrada)
+    if (voo.alvo > 0 || voo.atual > 0.001) anelBase.scale.setScalar(1 + voo.atual * (0.22 + Math.sin(t * 18) * 0.04));
     peitoMiolo.material.opacity = 0.4 + Math.sin(t * 2.6) * 0.25;
     bulboBrilho.material.opacity = 0.55 + Math.sin(t * 3.2) * 0.3;
 
@@ -395,6 +432,12 @@ export function criarRobo({ canvas, reduzido, aoPassar, aoClicar }) {
     falar,
     setFeliz,
     setDominio,
+    acenar,
+    cambalhota,
+    inclinarCabeca,
+    // Para onde olhar (-1..1) e intensidade do propulsor (0..1), usados pelo robô da Carreira
+    olhar(x, y = 0) { alvo.x = x; alvo.y = y; },
+    setVoo(v) { voo.alvo = v; },
     destruir() {
       rodando = false;
       ro.disconnect();

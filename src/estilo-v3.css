@@ -170,3 +170,23 @@
   .tecla { flex-basis: calc(33.333% - 7px); }
   .tecla__face img, .tecla__face svg { width: 28px; height: 28px; }
 }
+
+/* Robô que voa pela Carreira (voo-carreira.js). Fica na frente dos cards, e por trás quando cruza um. */
+.tempo__card { position: relative; z-index: 1; }
+.tempo__robo { position: absolute; left: 0; top: 0; z-index: 2; width: 150px; height: 190px; pointer-events: none; opacity: 0; transition: opacity 0.6s; }
+.tempo__robo.pronto { opacity: 1; }
+.tempo__robo.atras { z-index: 0; }
+.tempo__robo-in { width: 100%; height: 100%; }
+.tempo__robo-canvas { width: 100%; height: 100%; display: block; }
+.tempo__balao {
+  position: absolute; left: 50%; bottom: calc(100% - 22px); translate: -50% 0; z-index: 3; width: max-content; max-width: 220px;
+  padding: 8px 12px; border-radius: 12px; font-size: 11.5px; line-height: 1.35; text-align: center;
+  background: var(--texto); color: var(--bg); box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+  opacity: 0; scale: 0.85; transform-origin: 50% 100%; transition: opacity 0.3s, scale 0.4s var(--ease-out);
+}
+.tempo__balao::after { content: ''; position: absolute; left: 50%; top: 100%; translate: -50% -1px; border: 6px solid transparent; border-top-color: var(--texto); }
+.tempo__balao.on { opacity: 1; scale: 1; }
+@media (max-width: 860px) {
+  .tempo__robo { width: 84px; height: 106px; }
+  .tempo__balao { max-width: 160px; font-size: 10.5px; }
+}

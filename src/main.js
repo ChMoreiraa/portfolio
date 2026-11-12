@@ -13,6 +13,7 @@ import './estilo-barbu.css';
 import './estilo-aparelhos.css';
 import './estilo-responsivo.css';
 import { notebook, palco, ligarAparelhos } from './aparelhos.js';
+import { ligarVooCarreira } from './voo-carreira.js';
 import { areas, iconeCatalogo, corDe } from './catalogo.js';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -37,6 +38,7 @@ const EASE = 'expo.inOut';
 
 let lenis = null;
 let robo = null;
+let roboCarreira = null; // o robô que voa pela Carreira
 let carga = { pronto() {}, fim: Promise.resolve(), aberta: Promise.resolve() };
 // Espera um momento ocioso do navegador (com teto) para criar o que é pesado e fica longe do topo
 const ocioso = () => new Promise((ok) => ('requestIdleCallback' in window ? requestIdleCallback(() => ok(), { timeout: 1500 }) : setTimeout(ok, 200)));
@@ -1183,6 +1185,7 @@ function ligarDominio() {
       kb3d?.setDominio?.(false);
       globo?.setDominio?.(false);
       robo?.setDominio(false);
+      roboCarreira?.setDominio(false);
     }, 1000);
   }
   function expandir() {
@@ -1190,6 +1193,7 @@ function ligarDominio() {
     ativo = true;
     impacto();
     robo?.setDominio(true);
+    roboCarreira?.setDominio(true);
     camada.classList.add('on');
     setTimeout(laranja, 3000);
     const k = $('.dominio__kanji');
@@ -1219,6 +1223,7 @@ function ligarDominio() {
 function iniciarHome() {
   estado.homeIniciada = true;
   animarHome();
+  roboCarreira = ligarVooCarreira({ raiz: $('#tempo'), gsap, ScrollTrigger, reduzido, t });
   // Com o robô pronto, a abertura pode terminar; a entrada do topo começa quando os olhos revelam o site
   // O robô nasce com os olhos já abertos; o planeta, depois que o site aparece
   carga.aberta.then(ligarRobo).then(() => { carga.pronto(); return carga.fim; }).then(entradaHero);
