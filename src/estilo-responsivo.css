@@ -33,6 +33,11 @@ html, body { overflow-x: clip; }
 .menu-m__nav a:active span { color: var(--acento); }
 .menu-m__pe { font-size: 11px; color: var(--fraco); }
 
+/* "Engenheiro de IA & Dev Full-Stack" ao lado da marca não cabe junto com os links do menu nessa faixa */
+@media (min-width: 861px) and (max-width: 1180px) {
+  .topo__status { display: none; }
+}
+
 /* ---------- Tablet deitado ---------- */
 @media (max-width: 1080px) {
   .kb3d__info { max-width: 280px; }

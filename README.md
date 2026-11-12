@@ -1,8 +1,8 @@
 # </CHM> · portfólio
 
-Meu portfólio pessoal. Sou engenheiro de IA na Controller Automotive e estou me formando em Engenharia de
-Software, então quis um site que mostrasse o que eu faço de verdade: software com IA, automações e back-end,
-e não só uma lista de tecnologias.
+Meu portfólio pessoal. Sou engenheiro de IA na Controller Automotive e desenvolvedor full-stack, e estou me
+formando em Engenharia de Software. Quis um site que mostrasse o que eu faço de verdade: sistemas completos,
+do back-end à interface, com IA e automação onde fazem diferença, e não só uma lista de tecnologias.
 
 Fiz tudo sem framework, só com Vite, Three.js e GSAP. A ideia era ter liberdade total na animação e manter o
 site leve.

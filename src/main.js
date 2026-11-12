@@ -88,6 +88,7 @@ function renderGrade() {
       <div class="pcard__corpo">
         <h3 class="pcard__nome">${nomeDe(p)}</h3>
         <p class="pcard__resumo">${tx(p.resumo)}</p>
+        ${p.solucaoCurta ? `<p class="pcard__sol"><b class="mono">${t('card.solucao')}</b>${tx(p.solucaoCurta)}</p>` : ''}
         <div class="pcard__rodape">
           <span class="pcard__icones">${p.icones.map((n) => iconeHtml(n)).join('')}</span>
           <span class="pcard__btn"><span>${t('card.btn')}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span>
