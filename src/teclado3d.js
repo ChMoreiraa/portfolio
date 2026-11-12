@@ -185,7 +185,11 @@ export function criarTeclado3d({ canvas, teclas, reduzido, aoFocar }) {
     mouseAlvo.y = ponteiro.y;
   }
   canvas.addEventListener('pointerenter', () => (dentro = true));
-  canvas.addEventListener('pointerleave', () => { dentro = false; mouseAlvo.x = mouseAlvo.y = 0; setFoco(-1); });
+  canvas.addEventListener('pointerleave', (e) => {
+    dentro = false; mouseAlvo.x = mouseAlvo.y = 0;
+    // No toque o "sair" vem logo depois de soltar o dedo: apagar o foco aí desfazia a tecla escolhida
+    if (e.pointerType === 'mouse') setFoco(-1);
+  });
   canvas.addEventListener('pointermove', (e) => {
     dentro = true;
     pos(e);
@@ -202,8 +206,21 @@ export function criarTeclado3d({ canvas, teclas, reduzido, aoFocar }) {
     arrastando = true; moveu = 0; ultX = e.clientX;
     canvas.setPointerCapture(e.pointerId);
   });
-  const soltar = () => {
-    if (arrastando && moveu < 6 && foco >= 0) apertar(foco, 260, true);
+  // Qual tecla está no ponto do ponteiro, na hora. No toque não existe "passar por cima": o dedo encosta e solta
+  // antes de o quadro seguinte procurar a tecla, então o foco ainda estava vazio e o toque não fazia nada.
+  function teclaNoPonteiro() {
+    ray.setFromCamera(ponteiro, camera);
+    const hit = ray.intersectObjects(corpos)[0];
+    return hit ? hit.object.userData.indice : -1;
+  }
+  const soltar = (e) => {
+    if (arrastando && moveu < 6) {
+      if (e && e.pointerType !== 'mouse') {
+        pos(e);
+        const i = teclaNoPonteiro();
+        if (i >= 0) { setFoco(i); apertar(i, 260, true); }
+      } else if (foco >= 0) apertar(foco, 260, true);
+    }
     arrastando = false;
   };
   canvas.addEventListener('pointerup', soltar);
