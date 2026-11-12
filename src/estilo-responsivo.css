@@ -103,3 +103,12 @@ html, body { overflow-x: clip; }
   .menu-m__nav { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
   .menu-m__nav a { font-size: 28px; }
 }
+
+/* Celular e tablet no tema escuro: todo texto fica por cima do fundo colorido, então os tons secundários
+   (subtítulos, rótulos, rodapé) ficam mais claros para ler sem esforço */
+@media (max-width: 860px) {
+  :root:not([data-theme='light']) {
+    --suave: #C4BFD3;
+    --fraco: #9E99AF;
+  }
+}

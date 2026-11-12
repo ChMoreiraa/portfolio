@@ -108,8 +108,8 @@ export function criarFundo({ reduzido }) {
     gl.uniform3fv(uA, atual[0]);
     gl.uniform3fv(uB, atual[1]);
     gl.uniform3fv(uC, atual[2]);
-    // No celular o texto fica sempre por cima da aurora (sem margens livres): um pouco mais fraca para ler bem
-    const celular = innerWidth <= 860 ? 0.8 : 1;
+    // No celular o texto fica sempre por cima da aurora (sem margens livres): bem mais fraca, só um tom no fundo
+    const celular = innerWidth <= 860 ? 0.4 : 1;
     gl.uniform1f(uForca, forca * (tema === 'dark' ? 0.55 : 0.7) * celular);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
