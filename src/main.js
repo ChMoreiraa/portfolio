@@ -948,7 +948,7 @@ function ligarControles() {
   });
   aoTrocarIdioma(() => {
     renderGrade();
-    montarFluxo($('#fluxo-raiz'), { idioma: getIdioma(), reduzido, clique });
+    montarFluxo($('#fluxo-raiz'), { idioma: getIdioma(), reduzido, clique, aoMudarAltura: () => { lenis?.resize(); ScrollTrigger.refresh(); } });
     $$('#grade .card').forEach((el) => gsap.set(el, { clearProps: 'all' }));
     $$('#teclado .tecla:not(.tecla--mod)').forEach((el) => {
       const k = teclaDe(el);
@@ -1243,7 +1243,7 @@ function iniciar() {
   renderGrade();
   renderStack();
   renderCarreira();
-  montarFluxo($('#fluxo-raiz'), { idioma: getIdioma(), reduzido, clique });
+  montarFluxo($('#fluxo-raiz'), { idioma: getIdioma(), reduzido, clique, aoMudarAltura: () => { lenis?.resize(); ScrollTrigger.refresh(); } });
   aplicar();
   ligarPerfil();
   ligarForm();

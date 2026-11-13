@@ -88,3 +88,47 @@
   .fluxo__log { border-left: 0; border-top: 1px solid var(--linha); max-height: 200px; }
 }
 .fluxo__tela { position: relative; }
+
+/* ---------- Passos clicáveis: dica, passo escolhido e painel com princípio e habilidades ---------- */
+.fluxo__dica {
+  display: flex; align-items: center; gap: 10px; margin: 0; padding: 10px 18px; border-bottom: 1px solid var(--linha);
+  font-size: 11.5px; color: var(--suave);
+}
+.fluxo__dica i { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--acento); animation: dicaPulso 1.8s ease-out infinite; }
+.fluxo__dica.feita i { animation: none; opacity: 0.45; }
+@keyframes dicaPulso {
+  0% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--acento) 65%, transparent); }
+  100% { box-shadow: 0 0 0 9px transparent; }
+}
+.no { cursor: pointer; }
+.no:focus-visible { outline: 2px solid var(--acento); outline-offset: 3px; }
+.no.sel { border-color: var(--acento); background: color-mix(in oklab, var(--acento) 12%, var(--bg-2)); }
+.no--decisao.sel { background: transparent; }
+.no--decisao.sel::before { border-color: var(--acento); background: color-mix(in oklab, var(--acento) 12%, var(--bg-2)); }
+/* Anel pulsando no 1º passo até a pessoa apertar algum */
+.no--dica::after {
+  content: ''; position: absolute; inset: -6px; border-radius: 18px; border: 1.5px solid var(--acento); pointer-events: none;
+  animation: noPulso 1.8s ease-out infinite;
+}
+.fluxo.rodando .no--dica::after { animation: none; opacity: 0; }
+@keyframes noPulso { 0% { opacity: 0.9; scale: 0.97; } 100% { opacity: 0; scale: 1.12; } }
+
+.fluxo__info { border-top: 1px solid var(--linha); padding: 22px 24px 24px; min-height: 176px; }
+.fi { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 18px 40px; align-items: start; }
+.fi--vazio { display: block; }
+.fi__passo { margin: 0; font-size: 11px; color: var(--acento); letter-spacing: 0.06em; text-transform: uppercase; }
+.fi__t { margin: 8px 0 0; font-family: var(--serif); font-weight: 400; font-size: clamp(24px, 2.4vw, 32px); line-height: 1.1; letter-spacing: -0.01em; }
+.fi__d { margin: 10px 0 0; max-width: 54ch; font-size: 15px; line-height: 1.55; color: var(--suave); }
+.fi__skills { display: grid; gap: 14px; }
+.fi__grupo { margin: 0 0 8px; font-size: 10.5px; color: var(--fraco); letter-spacing: 0.08em; text-transform: uppercase; }
+.fi__chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.fi__chips li {
+  font-size: 12.5px; padding: 5px 11px; border-radius: 999px; border: 1px solid var(--linha-2);
+  background: color-mix(in oklab, var(--acento) 9%, transparent);
+}
+.fi__chips--soft li { background: transparent; color: var(--suave); }
+@media (max-width: 760px) {
+  .fi { grid-template-columns: 1fr; }
+  .fluxo__info { padding: 18px 16px 20px; min-height: 0; }
+  .fluxo__dica { padding: 10px 16px; }
+}

@@ -46,10 +46,66 @@ const LOG = {
   entregar: { pt: 'entregue · acompanhando o uso', en: 'delivered · following the usage' },
 };
 
+// O que aparece no painel embaixo do fluxo quando a pessoa aperta um passo: o princípio, como eu ajo nele e as
+// soft skills que uso ali.
+const INFO = {
+  pedido: {
+    t: { pt: 'Ouvir o problema, não a solução', en: 'Hear the problem, not the solution' },
+    d: {
+      pt: 'Começo pela dor de quem pede: o que toma tempo, o que custa caro e o que acontece se nada mudar.',
+      en: 'I start from the pain behind the request: what takes time, what costs money and what happens if nothing changes.',
+    },
+    soft: [{ pt: 'Escuta ativa', en: 'Active listening' }, { pt: 'Empatia com quem usa', en: 'User empathy' }, { pt: 'Comunicação clara', en: 'Clear communication' }],
+  },
+  entender: {
+    t: { pt: 'Medir antes de apostar', en: 'Measure before betting' },
+    d: {
+      pt: 'Antes de propor IA, levanto dados, regras e custo por uso. Se a conta não fecha, não vira projeto.',
+      en: 'Before proposing AI, I check the data, the rules and the cost per use. If the numbers do not add up, it does not become a project.',
+    },
+    soft: [{ pt: 'Pensamento crítico', en: 'Critical thinking' }, { pt: 'Visão de negócio', en: 'Business sense' }, { pt: 'Curiosidade', en: 'Curiosity' }],
+  },
+  planejar: {
+    t: { pt: 'Etapas pequenas, a mais útil primeiro', en: 'Small steps, most useful first' },
+    d: {
+      pt: 'Divido o trabalho em entregas que já resolvem parte do problema, cada uma com um critério claro de pronto.',
+      en: 'I split the work into deliveries that already solve part of the problem, each with a clear definition of done.',
+    },
+    soft: [{ pt: 'Organização', en: 'Organization' }, { pt: 'Priorização', en: 'Prioritization' }, { pt: 'Autonomia', en: 'Autonomy' }],
+  },
+  construir: {
+    t: { pt: 'Código simples, feito para durar', en: 'Simple code, built to last' },
+    d: {
+      pt: 'Do back-end à interface, escrevo código legível e uso agentes de IA para acelerar o repetitivo. A decisão continua minha.',
+      en: 'From back-end to interface, I write readable code and use AI agents to speed up the repetitive parts. The decisions stay mine.',
+    },
+    soft: [{ pt: 'Foco', en: 'Focus' }, { pt: 'Aprender rápido', en: 'Fast learning' }, { pt: 'Trabalho em equipe', en: 'Teamwork' }],
+  },
+  testes: {
+    t: { pt: 'Errar no teste, não em produção', en: 'Fail in tests, not in production' },
+    d: {
+      pt: 'Nada vai para produção sem teste e revisão. Quando algo falha, volto, corrijo a causa e testo de novo.',
+      en: 'Nothing goes to production without tests and review. When something fails, I go back, fix the cause and test again.',
+    },
+    soft: [{ pt: 'Rigor técnico', en: 'Technical rigor' }, { pt: 'Honestidade com o resultado', en: 'Honest about results' }, { pt: 'Persistência', en: 'Persistence' }],
+  },
+  entregar: {
+    t: { pt: 'Entregar é só o começo', en: 'Delivering is just the start' },
+    d: {
+      pt: 'Publico, acompanho o uso e o custo e ajusto junto com quem usa no dia a dia.',
+      en: 'I ship, follow usage and cost, and adjust it together with the people who use it every day.',
+    },
+    soft: [{ pt: 'Responsabilidade', en: 'Ownership' }, { pt: 'Ouvir feedback', en: 'Taking feedback' }, { pt: 'Melhoria contínua', en: 'Continuous improvement' }],
+  },
+};
+
 export function montarFluxo(raiz, opcoes) {
-  const { idioma, reduzido, clique } = opcoes;
+  const { idioma, reduzido, clique, aoMudarAltura } = opcoes;
   raiz._fluxo?.destruir(); // a montagem anterior (troca de idioma ou de orientação) para de observar
   const tx = (o) => o[idioma] ?? o.pt;
+  const tz = (v) => (typeof v === 'string' ? v : tx(v));
+  const pt = idioma === 'pt';
+  const toque = matchMedia('(pointer: coarse)').matches;
   const vertical = raiz.clientWidth > 0 && raiz.clientWidth < LIMITE_VERTICAL;
   const W = vertical ? WV : WH, H = vertical ? HV : HH;
   const pos = Object.fromEntries(NOS.map((n) => [n.id, vertical ? { ...POS_V[n.id] } : { x: n.x, y: n.y }]));
@@ -60,6 +116,7 @@ export function montarFluxo(raiz, opcoes) {
         <label class="fluxo__opcao"><input type="checkbox" id="fluxo-falha" checked /> ${idioma === 'pt' ? 'teste falha na 1ª vez' : 'test fails the 1st time'}</label>
         <button class="fluxo__exec" type="button" id="fluxo-exec"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg>${idioma === 'pt' ? 'Executar fluxo' : 'Run workflow'}</button>
       </div>
+      <p class="fluxo__dica mono ${raiz._fluxoTocou ? 'feita' : ''}"><i></i>${pt ? `${toque ? 'Toque' : 'Clique'} num passo para ver como eu trabalho nele` : `${toque ? 'Tap' : 'Click'} a step to see how I work on it`}</p>
       <div class="fluxo__area">
         <div class="fluxo__rolagem">
           <div class="fluxo__tela"><div class="fluxo__palco" style="width:${W}px;height:${H}px">
@@ -69,7 +126,7 @@ export function montarFluxo(raiz, opcoes) {
             </svg>
             ${ARESTAS.map(([, , rot], i) => (rot ? `<span class="fio__rot mono" id="rot-${i}">${tx(rot)}</span>` : '')).join('')}
             ${NOS.map((n) => `
-              <div class="no no--${n.tipo ?? 'acao'}" data-no="${n.id}" style="left:${pos[n.id].x}px;top:${pos[n.id].y}px" tabindex="0">
+              <div class="no no--${n.tipo ?? 'acao'} ${n.id === 'pedido' && !raiz._fluxoTocou ? 'no--dica' : ''}" data-no="${n.id}" style="left:${pos[n.id].x}px;top:${pos[n.id].y}px" tabindex="0" role="button" aria-pressed="false" aria-controls="fluxo-info">
                 <span class="no__ic"><svg viewBox="0 0 24 24" aria-hidden="true">${IC[n.ic]}</svg></span>
                 <span class="no__txt"><b>${tx(n.t)}</b>${n.s ? `<small>${tx(n.s)}</small>` : ''}</span>
                 <span class="no__ok" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg></span>
@@ -79,6 +136,7 @@ export function montarFluxo(raiz, opcoes) {
         </div>
         <ol class="fluxo__log mono" id="fluxo-log" aria-live="polite"><li class="vazio">${idioma === 'pt' ? '// clique em Executar fluxo · arraste os nós' : '// click Run workflow · drag the nodes'}</li></ol>
       </div>
+      <div class="fluxo__info" id="fluxo-info" aria-live="polite"></div>
     </div>`;
 
   const palco = raiz.querySelector('.fluxo__palco');
@@ -160,27 +218,103 @@ export function montarFluxo(raiz, opcoes) {
   requestAnimationFrame(desenhar);
   document.fonts?.ready.then(desenhar);
 
-  // Arrastar nós
+  // ---------- Painel do passo ----------
+  const info = raiz.querySelector('#fluxo-info');
+  function renderInfo(id) {
+    if (!id) {
+      return `<div class="fi fi--vazio">
+        <p class="fi__passo mono">${pt ? '6 passos' : '6 steps'}</p>
+        <h3 class="fi__t">${pt ? 'Do pedido à entrega' : 'From request to delivery'}</h3>
+        <p class="fi__d">${pt
+          ? `${toque ? 'Toque' : 'Clique'} num passo do fluxo para ver como eu trabalho nele e as habilidades que uso.`
+          : `${toque ? 'Tap' : 'Click'} a step in the workflow to see how I work on it and the skills I use.`}</p>
+      </div>`;
+    }
+    const i = NOS.findIndex((n) => n.id === id);
+    const d = INFO[id];
+    const chips = (lista, cls = '') => `<ul class="fi__chips ${cls}">${lista.map((c) => `<li>${tz(c)}</li>`).join('')}</ul>`;
+    return `<div class="fi">
+      <div class="fi__txt">
+        <p class="fi__passo mono">${pt ? 'Passo' : 'Step'} ${i + 1}/${NOS.length} · ${tx(NOS[i].t)}</p>
+        <h3 class="fi__t">${tx(d.t)}</h3>
+        <p class="fi__d">${tx(d.d)}</p>
+      </div>
+      <div class="fi__skills">
+        <div><p class="fi__grupo mono">Soft skills</p>${chips(d.soft)}</div>
+      </div>
+    </div>`;
+  }
+  let tocouNaExec = false; // apertou um passo durante a execução: o painel para de seguir o passo ativo
+  function selecionar(id, manual = false) {
+    if (manual) {
+      tocouNaExec = true;
+      if (!raiz._fluxoTocou) {
+        raiz._fluxoTocou = true;
+        palco.querySelector('.no--dica')?.classList.remove('no--dica');
+        raiz.querySelector('.fluxo__dica')?.classList.add('feita');
+      }
+      clique?.(1100, 0.05, 0.03);
+    }
+    if (id === raiz._fluxoSel && info.firstElementChild) return;
+    raiz._fluxoSel = id;
+    palco.querySelectorAll('.no').forEach((el) => {
+      const on = el.dataset.no === id;
+      el.classList.toggle('sel', on);
+      el.setAttribute('aria-pressed', String(on));
+    });
+    info.innerHTML = renderInfo(id);
+    if (!reduzido) gsap.fromTo(info.firstElementChild, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.45, ease: 'expo.out' });
+  }
+  // Monta de novo (idioma, girar o aparelho) no mesmo passo que estava aberto
+  const selAnterior = raiz._fluxoSel ?? null;
+  raiz._fluxoSel = undefined;
+  selecionar(selAnterior);
+
+  // O painel muda de altura conforme o passo: a página precisa remedir o scroll (senão o que vem abaixo, como o
+  // robô da Carreira, usa posições velhas)
+  let alturaInfo = 0, timerAltura;
+  const roInfo = new ResizeObserver(() => {
+    const h = info.offsetHeight;
+    if (Math.abs(h - alturaInfo) < 2) return;
+    const primeira = alturaInfo === 0;
+    alturaInfo = h;
+    if (primeira) return;
+    clearTimeout(timerAltura);
+    timerAltura = setTimeout(() => aoMudarAltura?.(), 150);
+  });
+  roInfo.observe(info);
+
+  // Arrastar nós; um toque sem arrastar abre o passo no painel
   palco.querySelectorAll('.no').forEach((el) => {
     let ini = null;
     el.addEventListener('pointerdown', (e) => {
       const id = el.dataset.no;
-      ini = { mx: e.clientX, my: e.clientY, x: pos[id].x, y: pos[id].y };
+      ini = { mx: e.clientX, my: e.clientY, x: pos[id].x, y: pos[id].y, andou: 0 };
       el.setPointerCapture(e.pointerId);
       el.classList.add('arrastando');
     });
     el.addEventListener('pointermove', (e) => {
       if (!ini) return;
       const id = el.dataset.no;
+      ini.andou = Math.max(ini.andou, Math.hypot(e.clientX - ini.mx, e.clientY - ini.my));
+      if (ini.andou < 5) return; // tremida do dedo não conta como arrastar
       pos[id].x = Math.max(70, Math.min(W - 70, ini.x + (e.clientX - ini.mx) / escala));
       pos[id].y = Math.max(30, Math.min(H - 30, ini.y + (e.clientY - ini.my) / escala));
       el.style.left = `${pos[id].x}px`;
       el.style.top = `${pos[id].y}px`;
       desenhar();
     });
-    const fim = () => { ini = null; el.classList.remove('arrastando'); };
-    el.addEventListener('pointerup', fim);
-    el.addEventListener('pointercancel', fim);
+    el.addEventListener('pointerup', () => {
+      if (ini && ini.andou < 5) selecionar(el.dataset.no, true);
+      ini = null;
+      el.classList.remove('arrastando');
+    });
+    el.addEventListener('pointercancel', () => { ini = null; el.classList.remove('arrastando'); });
+    el.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      selecionar(el.dataset.no, true);
+    });
   });
 
   // Execução
@@ -223,6 +357,7 @@ export function montarFluxo(raiz, opcoes) {
   const espera = (s) => new Promise((ok) => setTimeout(ok, reduzido ? 0 : s * 1000));
   async function passo(id, chave, s = 0.35, tipo) {
     estadoNo(id, 'ativo');
+    if (!tocouNaExec) selecionar(id); // o painel acompanha o passo ativo
     clique?.(900 + Math.random() * 300, 0.05, 0.025);
     if (chave) registrar(chave, tipo);
     await espera(s);
@@ -232,6 +367,7 @@ export function montarFluxo(raiz, opcoes) {
   async function executar() {
     if (rodando) return;
     rodando = true;
+    tocouNaExec = false;
     const falha = raiz.querySelector('#fluxo-falha').checked;
     inicio = performance.now();
     log.innerHTML = '';
@@ -271,7 +407,7 @@ export function montarFluxo(raiz, opcoes) {
   }, { threshold: [0, 0.45] });
   io.observe(raiz);
 
-  const api = { destruir() { ro.disconnect(); io.disconnect(); } };
+  const api = { destruir() { ro.disconnect(); io.disconnect(); roInfo.disconnect(); clearTimeout(timerAltura); } };
   raiz._fluxo = api;
   return api;
 }
